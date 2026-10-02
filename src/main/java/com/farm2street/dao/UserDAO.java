@@ -46,14 +46,6 @@ public class UserDAO {
             DBConnection.close(rs, stmt, conn);
         }
 
-        // Verified starter seed fallback only if password matches
-        if ("farmer@farm2street.org".equalsIgnoreCase(email) && "farm123".equals(password)) {
-            return new User(101, "Ramesh Patil", email, "farmer", "+91 98220 14450", "Valley Agro Belt");
-        } else if ("admin@farm2street.org".equalsIgnoreCase(email) && "admin123".equals(password)) {
-            return new User(1, "Marketplace Admin", email, "admin", "+91 98800 11223", "Central Operations");
-        } else if ("pooja@farm2street.org".equalsIgnoreCase(email) && "pooja123".equals(password)) {
-            return new User(202, "Pooja Sharma", email, "customer", "+91 98812 77410", "Central Residential Hub");
-        }
         return null;
     }
 

@@ -105,15 +105,6 @@ export const GUEST_USER: CurrentUser = {
   emailOrPhone: '',
 };
 
-const DEFAULT_CUSTOMER: CurrentUser = {
-  id: 'cust-101',
-  name: 'Pooja Sharma',
-  role: 'customer',
-  emailOrPhone: '+91 98812 77410',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-  extraInfo: 'Central Residential Hub',
-};
-
 const INITIAL_FARMER_PROFILE: FarmerProfile = {
   id: 'frm-001',
   name: 'Ramesh Patel',
@@ -201,7 +192,7 @@ const INITIAL_ORDERS: Order[] = [
   {
     id: 'F2S-ORD-849201',
     customerId: 'cust-101',
-    customerName: 'Pooja Sharma',
+    customerName: 'Verified Member',
     customerPhone: '+91 98812 77410',
     deliveryAddress: 'Green Acre Heights, Central City Enclave',
     items: [

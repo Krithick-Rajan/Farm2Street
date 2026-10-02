@@ -253,59 +253,10 @@ export const supabaseUserService = {
       // fallback
     }
 
-    // 3. Fallback to schema.sql seeded accounts (Admin, Farmer, Customer)
-    const seedAccounts: Record<string, { pass: string; user: SupabaseUser }> = {
-      'admin@farm2street.org': {
-        pass: 'admin123',
-        user: {
-          id: 1,
-          name: 'Marketplace Admin',
-          email: 'admin@farm2street.org',
-          role: 'admin',
-          phone: '+91 98800 11223',
-          address: 'Central Operations Desk',
-          extraInfo: 'Platform Governance & Traceability Lab',
-        },
-      },
-      'farmer@farm2street.org': {
-        pass: 'farm123',
-        user: {
-          id: 2,
-          name: 'Ramesh Patil',
-          email: 'farmer@farm2street.org',
-          role: 'farmer',
-          phone: '+91 98220 14450',
-          address: 'Sahyadri Agro Belt, Nashik',
-          extraInfo: 'Sahyadri Agro Farms (100% Certified Organic)',
-        },
-      },
-      'pooja@farm2street.org': {
-        pass: 'pooja123',
-        user: {
-          id: 3,
-          name: 'Pooja Sharma',
-          email: 'pooja@farm2street.org',
-          role: 'customer',
-          phone: '+91 98812 77410',
-          address: 'Kalyani Nagar, Pune',
-          extraInfo: 'Morning Harvest (06:00 AM - 09:00 AM)',
-        },
-      },
-    };
-
-    if (seedAccounts[clean]) {
-      const seed = seedAccounts[clean];
-      if (seed.pass === password) {
-        return { success: true, user: seed.user };
-      } else {
-        return { success: false, error: 'Incorrect password. Please verify and try again.' };
-      }
-    }
-
-    // If neither DB nor seeds match, reject with explicit error!
+    // If neither DB nor local registration matches, reject with explicit error!
     return {
       success: false,
-      error: 'Account not found. Please register a new account or check your credentials.',
+      error: 'Account not found. Please register a new account on the platform.',
     };
   },
 
