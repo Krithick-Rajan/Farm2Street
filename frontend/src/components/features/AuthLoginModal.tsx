@@ -213,7 +213,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
-                      placeholder="e.g. +91 98765 43210 or email"
+                      placeholder="Email or mobile number"
                     />
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       type="text"
                       value={farmerKisanId}
                       onChange={(e) => setFarmerKisanId(e.target.value)}
-                      placeholder="e.g. KISAN-MH-2024-8921"
+                      placeholder="Kisan ID or mobile number"
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-mono font-medium"
                     />
                   </div>
@@ -248,7 +248,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       type="text"
                       value={driverId}
                       onChange={(e) => setDriverId(e.target.value)}
-                      placeholder="e.g. DRV-PUN-004"
+                      placeholder="Driver ID or vehicle number"
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-mono font-medium"
                     />
                   </div>
@@ -266,7 +266,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       type="email"
                       value={adminEmail}
                       onChange={(e) => setAdminEmail(e.target.value)}
-                      placeholder="admin@farm2street.in"
+                      placeholder="Work email"
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
                     />
                   </div>
@@ -283,7 +283,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                     type="password"
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
-                    placeholder="Enter password / OTP"
+                    placeholder="Password or OTP"
                     className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
                   />
                 </div>

@@ -345,7 +345,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Ramesh Patel"
+                placeholder="Full name"
                 className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b] focus:ring-3 focus:ring-[#34754b]/10"
               />
             </div>
@@ -359,7 +359,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 type="text"
                 value={emailOrPhone}
                 onChange={(e) => setEmailOrPhone(e.target.value)}
-                placeholder={selectedRole === 'admin' ? 'admin@farm2street.in' : '+91 98812 77410'}
+                placeholder={selectedRole === 'admin' ? 'Work email' : 'Email or mobile number'}
                 className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b] focus:ring-3 focus:ring-[#34754b]/10"
               />
             </div>
@@ -377,7 +377,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                     type="text"
                     value={deliveryAddress}
                     onChange={(e) => setDeliveryAddress(e.target.value)}
-                    placeholder="Flat 402, Green Acre Heights, Kalyani Nagar"
+                    placeholder="Address (house, building, street)"
                     className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b] focus:ring-3 focus:ring-[#34754b]/10"
                   />
                 </div>
@@ -390,7 +390,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="text"
                       value={deliveryArea}
                       onChange={(e) => setDeliveryArea(e.target.value)}
-                      placeholder="City Center - Zone 1"
+                      placeholder="Area or city"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b] focus:ring-3 focus:ring-[#34754b]/10"
                     />
                   </div>
@@ -423,7 +423,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="text"
                       value={farmName}
                       onChange={(e) => setFarmName(e.target.value)}
-                      placeholder="Green Valley Farms"
+                      placeholder="Farm name"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                     />
                   </div>
@@ -435,7 +435,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="text"
                       value={farmLocation}
                       onChange={(e) => setFarmLocation(e.target.value)}
-                      placeholder="Agro-Belt Valley"
+                      placeholder="Village or district"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                     />
                   </div>
@@ -450,7 +450,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="number"
                       value={totalAcres}
                       onChange={(e) => setTotalAcres(e.target.value)}
-                      placeholder="8.5"
+                      placeholder="Acres"
                       step="0.5"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                     />
@@ -480,7 +480,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="text"
                       value={kisanId}
                       onChange={(e) => setKisanId(e.target.value)}
-                      placeholder="KISAN-MH-2024-8921"
+                      placeholder="Kisan ID"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                     />
                   </div>
@@ -492,7 +492,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="text"
                       value={upiPayoutId}
                       onChange={(e) => setUpiPayoutId(e.target.value)}
-                      placeholder="ramesh@upi"
+                      placeholder="UPI ID"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                     />
                   </div>
@@ -526,7 +526,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="text"
                       value={vehicleNumber}
                       onChange={(e) => setVehicleNumber(e.target.value)}
-                      placeholder="MH 12 ET 4892"
+                      placeholder="Vehicle number"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                     />
                   </div>
@@ -541,7 +541,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="text"
                       value={drivingLicense}
                       onChange={(e) => setDrivingLicense(e.target.value)}
-                      placeholder="DL-1420110012345"
+                      placeholder="Driving license number"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                     />
                   </div>
@@ -553,7 +553,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                       type="text"
                       value={operatingZone}
                       onChange={(e) => setOperatingZone(e.target.value)}
-                      placeholder="Central Hub & Metro Cluster"
+                      placeholder="Delivery hub or zone"
                       className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                     />
                   </div>
@@ -587,7 +587,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                     type="password"
                     value={securityKey}
                     onChange={(e) => setSecurityKey(e.target.value)}
-                    placeholder="ROOT-SEC-2026-F2S"
+                    placeholder="Platform security key"
                     className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                   />
                 </div>
@@ -605,7 +605,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password"
+                    placeholder="Password"
                     className="w-full h-12 px-4 pr-11 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                   />
                   <button

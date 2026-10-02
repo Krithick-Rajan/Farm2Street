@@ -80,28 +80,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       label: 'Customer',
       icon: User,
       inputLabel: 'Email or Mobile Number',
-      inputPlaceholder: 'name@example.com or 10-digit mobile',
+      inputPlaceholder: 'Email or mobile number',
       quote: 'Direct harvest-to-kitchen connection with morning-picked greens.',
     },
     farmer: {
       label: 'Farmer',
       icon: Tractor,
       inputLabel: 'Kisan Registration ID / Mobile',
-      inputPlaceholder: 'Enter Kisan ID or registered mobile',
+      inputPlaceholder: 'Kisan ID or mobile number',
       quote: '+24% higher realization without intermediary commission cuts.',
     },
     delivery: {
       label: 'Delivery Partner',
       icon: Truck,
       inputLabel: 'Fleet Driver ID / Vehicle Number',
-      inputPlaceholder: 'Enter driver ID or vehicle number',
+      inputPlaceholder: 'Driver ID or vehicle number',
       quote: 'Clean electric transit with turn-by-turn farm-to-door navigation.',
     },
     admin: {
       label: 'SuperAdmin',
       icon: ShieldCheck,
       inputLabel: 'Operator Administrator Email',
-      inputPlaceholder: 'admin@farm2street.in',
+      inputPlaceholder: 'Work email',
       quote: 'Platform oversight, KYC approvals, and automated T+1 settlements.',
     },
   };
@@ -298,7 +298,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Password"
                   className="w-full h-12 min-h-[48px] shrink-0 px-4 pr-12 rounded-[13px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b] focus:ring-4 focus:ring-[#34754b]/10"
                 />
 
