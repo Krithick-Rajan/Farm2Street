@@ -1,5 +1,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ page import="com.farm2street.dao.ProduceDAO" %>
 <%@ page import="com.farm2street.model.Produce" %>
 <%@ page import="java.util.List" %>
@@ -7,8 +6,8 @@
     ProduceDAO dao = new ProduceDAO();
     String category = request.getParameter("category");
     List<Produce> produceList = dao.getAllProduce(category);
-    request.setAttribute("items", produceList);
-    request.setAttribute("selectedCategory", category != null ? category : "All");
+    String selectedCategory = (category != null && !category.trim().isEmpty()) ? category.trim() : "All";
+    String[] categories = new String[]{"All", "Vegetables", "Greens", "Root", "Exotic", "Boxes"};
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,45 +55,47 @@
     <!-- Category Filter Tabs (AJAX / GET Form) -->
     <div class="flex flex-wrap items-center gap-2">
       <span class="text-xs font-bold uppercase tracking-wider text-stone-400 mr-2">Filter Category:</span>
-      <c:forTokens items="All,Vegetables,Greens,Root,Exotic,Boxes" delims="," var="cat">
-        <a href="catalog.jsp?category=${cat == 'All' ? '' : cat}"
-           class="px-4 py-1.5 rounded-full text-xs font-bold transition-all ${selectedCategory == cat || (selectedCategory == 'All' && cat == 'All') ? 'bg-[#183c2a] text-white shadow-sm' : 'bg-white border border-stone-200 text-stone-600 hover:border-stone-400'}">
-          ${cat}
+      <% for (String cat : categories) {
+           boolean isActive = selectedCategory.equalsIgnoreCase(cat) || ("All".equalsIgnoreCase(selectedCategory) && "All".equalsIgnoreCase(cat));
+           String href = "catalog.jsp" + ("All".equalsIgnoreCase(cat) ? "" : "?category=" + cat);
+      %>
+        <a href="<%= href %>"
+           class="px-4 py-1.5 rounded-full text-xs font-bold transition-all <%= isActive ? "bg-[#183c2a] text-white shadow-sm" : "bg-white border border-stone-200 text-stone-600 hover:border-stone-400" %>">
+          <%= cat %>
         </a>
-      </c:forTokens>
+      <% } %>
     </div>
 
-    <!-- Produce Grid rendered via JSTL <c:forEach> -->
+    <!-- Produce Grid rendered via JSP -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <c:choose>
-        <c:when test="${not empty items}">
-          <c:forEach var="item" items="${items}">
+      <% if (produceList != null && !produceList.isEmpty()) {
+           for (Produce item : produceList) { %>
             <div class="card-produce p-5 flex flex-col justify-between space-y-4">
               <div class="space-y-3">
                 <div class="flex items-start justify-between gap-2">
                   <div>
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400">${item.category}</span>
-                    <h3 class="text-lg font-bold text-stone-900 mt-0.5">${item.name}</h3>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400"><%= item.getCategory() %></span>
+                    <h3 class="text-lg font-bold text-stone-900 mt-0.5"><%= item.getName() %></h3>
                   </div>
-                  <c:if test="${item.organic}">
+                  <% if (item.isOrganic()) { %>
                     <span class="badge-organic">&#10003; 100% Organic</span>
-                  </c:if>
+                  <% } %>
                 </div>
                 
-                <p class="text-xs text-stone-600 line-clamp-2">${item.description}</p>
+                <p class="text-xs text-stone-600 line-clamp-2"><%= (item.isOrganic() ? "Certified Organic " : "Farm Fresh ") + item.getName() + " sourced from " + item.getFarmName() + ", " + item.getFarmLocation() %>.</p>
                 
                 <div class="bg-stone-50 rounded-xl p-3 text-xs space-y-1 text-stone-600 border border-stone-100">
                   <div class="flex justify-between">
                     <span class="text-stone-400 font-medium">Farm Origin:</span>
-                    <span class="font-bold text-stone-800">${item.farmName}</span>
+                    <span class="font-bold text-stone-800"><%= item.getFarmName() %></span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-stone-400 font-medium">Batch ID:</span>
-                    <span class="font-mono text-emerald-800 font-bold">${item.batchId}</span>
+                    <span class="font-mono text-emerald-800 font-bold"><%= item.getBatchId() %></span>
                   </div>
                   <div class="flex justify-between">
                     <span class="text-stone-400 font-medium">Stock Left:</span>
-                    <span class="font-bold text-stone-800">${item.availableQty} ${item.unit}</span>
+                    <span class="font-bold text-stone-800"><%= item.getStock() %> <%= item.getUnit() %></span>
                   </div>
                 </div>
               </div>
@@ -103,21 +104,19 @@
               <div class="pt-3 border-t border-stone-100 flex items-center justify-between">
                 <div>
                   <span class="text-xs text-stone-400">Direct Farm Price</span>
-                  <div class="text-xl font-bold text-[#183c2a]">&#8377;${item.price} <span class="text-xs text-stone-500 font-normal">/ ${item.unit}</span></div>
+                  <div class="text-xl font-bold text-[#183c2a]">&#8377;<%= item.getPrice() %> <span class="text-xs text-stone-500 font-normal">/ <%= item.getUnit() %></span></div>
                 </div>
                 <a href="index.html" class="px-4 py-2 bg-[#183c2a] text-white rounded-xl text-xs font-bold hover:bg-[#2c5b3d] transition-all">
                   Order in App &rarr;
                 </a>
               </div>
             </div>
-          </c:forEach>
-        </c:when>
-        <c:otherwise>
+      <%   }
+         } else { %>
           <div class="col-span-3 text-center p-12 bg-white rounded-2xl border border-stone-200">
             <p class="text-stone-500 font-semibold">No harvest items found for this category.</p>
           </div>
-        </c:otherwise>
-      </c:choose>
+      <% } %>
     </div>
 
     <!-- Syllabus Compliance Footer -->

@@ -75,4 +75,11 @@ public class Produce implements Serializable {
 
     public boolean isOrganic() { return organic; }
     public void setOrganic(boolean organic) { this.organic = organic; }
+
+    public int getAvailableQty() { return stock; }
+    public void setAvailableQty(int availableQty) { this.stock = availableQty; }
+
+    public String getDescription() {
+        return (organic ? "Certified Organic " : "Farm Fresh ") + name + " harvested directly at " + farmName + " (" + farmLocation + ").";
+    }
 }
