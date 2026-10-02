@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useFarm } from '../../context/FarmContext';
 import { Produce, TraceabilityBatch } from '../../types';
-import { CustomSelect } from '../ui/CustomSelect';
+import { CustomSelect } from '../ui/UiWidgets';
 
 export const FarmerPortal: React.FC = () => {
   const {

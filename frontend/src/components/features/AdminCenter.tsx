@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useFarm } from '../../context/FarmContext';
 import { DeliveryStatus, Order } from '../../types';
-import { CustomSelect } from '../ui/CustomSelect';
+import { CustomSelect } from '../ui/UiWidgets';
 
 export const AdminCenter: React.FC = () => {
   const {

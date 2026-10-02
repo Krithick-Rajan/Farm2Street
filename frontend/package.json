@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "deploy": "tsc -b && vite build && powershell -Command \"Copy-Item -Path dist/* -Destination ../src/main/webapp/ -Recurse -Force\"",
+    "build": "tsc && vite build",
+    "deploy": "tsc && vite build && powershell -Command \"Copy-Item -Path dist/* -Destination ../src/main/webapp/ -Recurse -Force\"",
     "preview": "vite preview"
   },
   "dependencies": {

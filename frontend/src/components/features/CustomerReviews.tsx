@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useFarm } from '../../context/FarmContext';
 import { CustomerReview } from '../../types';
-import { CustomSelect } from '../ui/CustomSelect';
+import { CustomSelect } from '../ui/UiWidgets';
 
 export const CustomerReviews: React.FC = () => {
   const { reviews, addReview, voteHelpfulReview, currentUser, produceList } = useFarm();

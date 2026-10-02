@@ -171,8 +171,8 @@ farm2street/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── features/         # Portals, Admin, Traceability, OrderModals
-│   │   │   ├── layout/           # Navbar (with FarmLogo), LeftSlideNav, Footer
-│   │   │   └── ui/               # Interactive Canvas Hero, 3D Carousel
+│   │   │   ├── layout/           # Navbar (consolidated with FarmLogo, LeftSlideNav, Footer)
+│   │   │   └── ui/               # UiWidgets (FarmHero, TrailingCursor, CustomSelect), 3D Carousel
 │   │   ├── context/              # FarmContext (State, Cookies, Sessions)
 │   │   ├── data/                 # Seed & mock fallback data
 │   │   ├── lib/                  # Supabase PostgreSQL client & helpers

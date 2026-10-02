@@ -24,7 +24,7 @@ import { useFarm } from '../../context/FarmContext';
 import { UserRole } from '../../types';
 import { CropCanvas } from './CropCanvas';
 import { FarmLogo } from '../layout/Navbar';
-import { CustomSelect } from '../ui/CustomSelect';
+import { CustomSelect } from '../ui/UiWidgets';
 
 interface RegisterPageProps {
   onBackToMarketplace: () => void;
