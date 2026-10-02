@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<harvestTraceabilityFeed platform="Farm2Street" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <batch id="BATCH-TM-882">
+    <produceId>1</produceId>
+    <name>Country Heirloom Tomatoes</name>
+    <category>Vine</category>
+    <price currency="INR" unit="kg">42.0</price>
+    <farmOrigin>
+      <name>Green Valley Farms</name>
+      <coordinates>Sector 4, Valley Agro-Belt</coordinates>
+      <harvestDate>2026-09-30</harvestDate>
+    </farmOrigin>
+    <pesticideFree>true</pesticideFree>
+    <stockAvailable>85</stockAvailable>
+  </batch>
+  <batch id="BATCH-SP-104">
+    <produceId>2</produceId>
+    <name>Hydroponic Baby Spinach</name>
+    <category>Leafy Greens</category>
+    <price currency="INR" unit="bunch">35.0</price>
+    <farmOrigin>
+      <name>Highland Organics</name>
+      <coordinates>Highland Agro-Cluster</coordinates>
+      <harvestDate>2026-09-30</harvestDate>
+    </farmOrigin>
+    <pesticideFree>true</pesticideFree>
+    <stockAvailable>120</stockAvailable>
+  </batch>
+  <batch id="BATCH-CR-552">
+    <produceId>3</produceId>
+    <name>Crisp Farm Fresh Carrots</name>
+    <category>Root</category>
+    <price currency="INR" unit="kg">48.0</price>
+    <farmOrigin>
+      <name>Blue Mountain Orchards</name>
+      <coordinates>Hill Country Agro-Belt</coordinates>
+      <harvestDate>2026-09-29</harvestDate>
+    </farmOrigin>
+    <pesticideFree>true</pesticideFree>
+    <stockAvailable>64</stockAvailable>
+  </batch>
+</harvestTraceabilityFeed>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0"
+         metadata-complete="true">
+
+  <display-name>Farm2Street Agri-Tech Platform</display-name>
+  <description>Direct Farmer-to-Consumer Produce Marketplace with Harvest Traceability</description>
+
+  <!-- Welcome file configuration -->
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <!-- Session Timeout: 30 minutes (Topic 14: Session Management) -->
+  <session-config>
+    <session-timeout>30</session-timeout>
+    <cookie-config>
+      <name>JSESSIONID</name>
+      <http-only>true</http-only>
+    </cookie-config>
+  </session-config>
+
+  <!-- Produce & Harvest Catalog REST Servlet -->
+  <servlet>
+    <servlet-name>ProduceServlet</servlet-name>
+    <servlet-class>com.farm2street.controller.ProduceServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ProduceServlet</servlet-name>
+    <url-pattern>/api/produce</url-pattern>
+  </servlet-mapping>
+
+  <!-- Session Shopping Cart Servlet -->
+  <servlet>
+    <servlet-name>CartServlet</servlet-name>
+    <servlet-class>com.farm2street.controller.CartServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CartServlet</servlet-name>
+    <url-pattern>/api/cart</url-pattern>
+  </servlet-mapping>
+
+  <!-- Official Razorpay Order Generation Servlet -->
+  <servlet>
+    <servlet-name>RazorpayOrderServlet</servlet-name>
+    <servlet-class>com.farm2street.controller.RazorpayOrderServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RazorpayOrderServlet</servlet-name>
+    <url-pattern>/api/razorpay/create-order</url-pattern>
+  </servlet-mapping>
+
+  <!-- Razorpay Payment Verification Servlet -->
+  <servlet>
+    <servlet-name>PaymentVerifyServlet</servlet-name>
+    <servlet-class>com.farm2street.controller.PaymentVerifyServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PaymentVerifyServlet</servlet-name>
+    <url-pattern>/api/razorpay/verify-payment</url-pattern>
+  </servlet-mapping>
+
+  <!-- XML Traceability Feed Servlet (Topic 5: XML) -->
+  <servlet>
+    <servlet-name>TraceabilityXmlServlet</servlet-name>
+    <servlet-class>com.farm2street.controller.TraceabilityXmlServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>TraceabilityXmlServlet</servlet-name>
+    <url-pattern>/api/traceability.xml</url-pattern>
+  </servlet-mapping>
+
+  <!-- User Authentication & Session Servlet -->
+  <servlet>
+    <servlet-name>AuthServlet</servlet-name>
+    <servlet-class>com.farm2street.controller.AuthServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AuthServlet</servlet-name>
+    <url-pattern>/api/auth/*</url-pattern>
+  </servlet-mapping>
+
+</web-app>

@@ -1,0 +1,27 @@
+# Compiled Java classes and Maven artifacts
+target/
+*.class
+*.war
+*.jar
+
+# Node.js dependencies and build output
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and sensitive keys
+.env
+.env.local
+.env.*.local
+
+# IDE and OS metadata
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
