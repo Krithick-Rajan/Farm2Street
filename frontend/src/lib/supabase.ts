@@ -12,7 +12,7 @@ const DEFAULT_URL =
   import.meta.env.VITE_SUPABASE_URL || 'https://aydjkpolejhsmpsrmgfo.supabase.co';
 const DEFAULT_KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5ZGprcG9sZWpoc21wc3JtZ2ZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5NTM2MDksImV4cCI6MjEwNjUyOTYwOX0.eKqqXMKn1jhSli1y_XYNvaU5tK_qcV2ada-iOPPeuYg';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5ZGprcG9sZWpoc21wc3JtZ2ZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDk1MzYwOSwiZXhwIjoyMTA2NTI5NjA5fQ.aNbIyjfmwsdLh9cwpbVioKmmK_euyt4WW_CVfko0ZXc';
 
 export const SUPABASE_CONFIG: SupabaseConfig = {
   supabaseUrl: DEFAULT_URL,
@@ -320,10 +320,13 @@ export const supabaseUserService = {
     extraInfo?: string;
   }): Promise<{ success: boolean; user?: SupabaseUser; error?: string }> {
     try {
-      const cleanEmail = newUser.email.trim().toLowerCase();
+      const raw = newUser.email.trim();
+      const isEmail = raw.includes('@');
+      const cleanEmail = isEmail ? raw.toLowerCase() : `${raw}@user.farm2street.org`;
+      const phoneVal = newUser.phone?.trim() || (!isEmail ? raw : '');
 
       // Check existing in Supabase
-      const existing = await this.findUser(cleanEmail);
+      const existing = await this.findUser(raw);
       if (existing) {
         return {
           success: false,
@@ -340,30 +343,37 @@ export const supabaseUserService = {
             email: cleanEmail,
             password_hash: newUser.password,
             role: newUser.role,
-            phone: newUser.phone || '',
+            phone: phoneVal,
             address: newUser.address || '',
           },
         ])
         .select();
 
-      let createdUser: SupabaseUser;
-      if (!error && data && data.length > 0) {
-        createdUser = {
-          ...data[0],
-          extraInfo: newUser.extraInfo,
-        } as SupabaseUser;
-      } else {
-        createdUser = {
-          id: `usr_${Date.now().toString().slice(-6)}`,
-          name: newUser.name.trim(),
-          email: cleanEmail,
-          password_hash: newUser.password,
-          role: newUser.role,
-          phone: newUser.phone,
-          address: newUser.address,
-          extraInfo: newUser.extraInfo,
+      if (error) {
+        console.error('Supabase users insert error:', error);
+        if (error.code === '42501' || error.message?.includes('row-level security')) {
+          return {
+            success: false,
+            error: 'Supabase Row-Level Security (RLS) is blocking inserts. Please disable RLS in Supabase SQL Editor.',
+          };
+        }
+        return {
+          success: false,
+          error: `Supabase error: ${error.message}`,
         };
       }
+
+      if (!data || data.length === 0) {
+        return {
+          success: false,
+          error: 'Database returned no data after registration. Please retry.',
+        };
+      }
+
+      const createdUser = {
+        ...data[0],
+        extraInfo: newUser.extraInfo,
+      } as SupabaseUser;
 
       // Cache into local storage
       try {
