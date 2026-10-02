@@ -78,7 +78,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     setErrorMessage('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -92,6 +92,16 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       return;
     }
 
+    if (!password || password.length < 4) {
+      setErrorMessage('Please create a secure password (minimum 4 characters).');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage('Passwords do not match. Please verify both entries.');
+      return;
+    }
+
     if (!agreeTerms) {
       setErrorMessage('Please accept the Farm2Street platform protocols.');
       return;
@@ -99,45 +109,40 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
+    const payload: any = {
+      role: selectedRole,
+      name: name.trim(),
+      emailOrPhone: emailOrPhone.trim(),
+      password,
+    };
 
-      if (selectedRole === 'customer') {
-        registerUser({
-          role: 'customer',
-          name,
-          emailOrPhone,
-          location: `${deliveryAddress}, ${deliveryArea}`,
-          extraInfo: `${deliveryArea} • ${preferredWindow}`,
-        });
-      } else if (selectedRole === 'farmer') {
-        registerUser({
-          role: 'farmer',
-          name,
-          emailOrPhone,
-          farmName,
-          location: farmLocation,
-          totalAcres: parseFloat(totalAcres) || 5,
-          extraInfo: `${farmName} (${farmingType})`,
-        });
-      } else if (selectedRole === 'delivery') {
-        registerUser({
-          role: 'delivery',
-          name,
-          emailOrPhone,
-          vehicleType,
-          vehicleNumber,
-          extraInfo: `${vehicleType} • ${vehicleNumber}`,
-        });
-      } else {
-        registerUser({
-          role: 'admin',
-          name,
-          emailOrPhone: adminOrgEmail || emailOrPhone,
-          extraInfo: adminDept,
-        });
+    if (selectedRole === 'customer') {
+      payload.location = `${deliveryAddress}, ${deliveryArea}`;
+      payload.extraInfo = `${deliveryArea} • ${preferredWindow}`;
+    } else if (selectedRole === 'farmer') {
+      payload.farmName = farmName;
+      payload.location = farmLocation;
+      payload.totalAcres = parseFloat(totalAcres) || 5;
+      payload.extraInfo = `${farmName} (${farmingType})`;
+    } else if (selectedRole === 'delivery') {
+      payload.vehicleType = vehicleType;
+      payload.vehicleNumber = vehicleNumber;
+      payload.extraInfo = `${vehicleType} • ${vehicleNumber}`;
+    } else {
+      payload.emailOrPhone = (adminOrgEmail || emailOrPhone).trim();
+      payload.extraInfo = adminDept;
+    }
+
+    try {
+      const res = await registerUser(payload);
+      setIsLoading(false);
+      if (!res.success) {
+        setErrorMessage(res.error || 'Registration failed. Please try again.');
       }
-    }, 850);
+    } catch {
+      setIsLoading(false);
+      setErrorMessage('Error registering account with Supabase. Please retry.');
+    }
   };
 
   const roleMeta: Record<

@@ -29,7 +29,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
   onClose,
   defaultRole = 'customer',
 }) => {
-  const { loginAsRole, currentUser } = useFarm();
+  const { loginWithCredentials, currentUser } = useFarm();
   const [selectedRole, setSelectedRole] = useState<UserRole>(defaultRole);
 
   // Form states (clean empty inputs for live authentication)
@@ -38,21 +38,42 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
   const [driverId, setDriverId] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [passcode, setPasscode] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
     let identifier = '';
     if (selectedRole === 'farmer') identifier = farmerKisanId.trim();
     else if (selectedRole === 'delivery') identifier = driverId.trim();
     else if (selectedRole === 'admin') identifier = adminEmail.trim();
     else identifier = customerPhone.trim();
 
-    loginAsRole(selectedRole, {
-      emailOrPhone: identifier,
-    });
-    onClose();
+    if (!identifier) {
+      setErrorMessage('Please enter your email or identifier.');
+      return;
+    }
+    if (!passcode) {
+      setErrorMessage('Please enter your password.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await loginWithCredentials(identifier, passcode, selectedRole);
+      setIsLoading(false);
+      if (!res.success) {
+        setErrorMessage(res.error || 'Authentication failed. Please verify credentials.');
+      } else {
+        onClose();
+      }
+    } catch {
+      setIsLoading(false);
+      setErrorMessage('Error during authentication. Please retry.');
+    }
   };
 
   const roleMeta: Record<
@@ -201,6 +222,11 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
 
             {/* Login Inputs Form */}
             <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
+              {errorMessage && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 font-medium">
+                  {errorMessage}
+                </div>
+              )}
               {selectedRole === 'customer' && (
                 <div>
                   <label className="block font-semibold text-stone-700 mb-1">
@@ -293,9 +319,12 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className={`w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all ${currentMeta.buttonBg}`}
+                  disabled={isLoading}
+                  className={`w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all ${
+                    isLoading ? 'opacity-70 cursor-not-allowed' : ''
+                  } ${currentMeta.buttonBg}`}
                 >
-                  <span>Sign In as {selectedRole.toUpperCase()}</span>
+                  <span>{isLoading ? 'Verifying with Supabase...' : `Sign In as ${selectedRole.toUpperCase()}`}</span>
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>

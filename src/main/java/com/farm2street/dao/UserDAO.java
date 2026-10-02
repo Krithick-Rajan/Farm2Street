@@ -26,14 +26,19 @@ public class UserDAO {
             rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return new User(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("email"),
-                    rs.getString("role"),
-                    rs.getString("phone"),
-                    rs.getString("address")
-                );
+                String dbPass = rs.getString("password_hash");
+                if (dbPass != null && dbPass.equals(password)) {
+                    return new User(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("role"),
+                        rs.getString("phone"),
+                        rs.getString("address")
+                    );
+                } else {
+                    return null; // Incorrect password
+                }
             }
         } catch (Exception e) {
             System.err.println("User auth notice: " + e.getMessage());
@@ -41,13 +46,15 @@ public class UserDAO {
             DBConnection.close(rs, stmt, conn);
         }
 
-        // Mock fallback for demo authentication (Farmer, Customer, Admin)
-        if ("farmer@farm2street.org".equalsIgnoreCase(email)) {
+        // Verified starter seed fallback only if password matches
+        if ("farmer@farm2street.org".equalsIgnoreCase(email) && "farm123".equals(password)) {
             return new User(101, "Ramesh Patil", email, "farmer", "+91 98220 14450", "Valley Agro Belt");
-        } else if ("admin@farm2street.org".equalsIgnoreCase(email)) {
+        } else if ("admin@farm2street.org".equalsIgnoreCase(email) && "admin123".equals(password)) {
             return new User(1, "Marketplace Admin", email, "admin", "+91 98800 11223", "Central Operations");
+        } else if ("pooja@farm2street.org".equalsIgnoreCase(email) && "pooja123".equals(password)) {
+            return new User(202, "Pooja Sharma", email, "customer", "+91 98812 77410", "Central Residential Hub");
         }
-        return new User(202, "Pooja Sharma", email, "customer", "+91 98812 77410", "Central Residential Hub");
+        return null;
     }
 
     public boolean register(String name, String email, String password, String role, String phone, String address) {

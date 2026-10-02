@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Produce, Order, TraceabilityBatch, SubscriptionBox } from '../types';
+import { Produce, Order, TraceabilityBatch, SubscriptionBox, UserRole } from '../types';
 
 // Supabase Configuration & Realtime Client
 // Powered by Supabase PostgreSQL 16 & Realtime Channel Engine
@@ -9,10 +9,10 @@ export interface SupabaseConfig {
 }
 
 const DEFAULT_URL =
-  import.meta.env.VITE_SUPABASE_URL || 'https://f2s-prod.supabase.co';
+  import.meta.env.VITE_SUPABASE_URL || 'https://aydjkpolejhsmpsrmgfo.supabase.co';
 const DEFAULT_KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4MjAwMDB9.sampleSupabaseKey';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5ZGprcG9sZWpoc21wc3JtZ2ZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5NTM2MDksImV4cCI6MjEwNjUyOTYwOX0.eKqqXMKn1jhSli1y_XYNvaU5tK_qcV2ada-iOPPeuYg';
 
 export const SUPABASE_CONFIG: SupabaseConfig = {
   supabaseUrl: DEFAULT_URL,
@@ -181,3 +181,211 @@ export const supabaseFarmService = {
     }
   },
 };
+
+// 4. Supabase User Authentication & Role Management
+export interface SupabaseUser {
+  id: number | string;
+  name: string;
+  email: string;
+  password_hash?: string;
+  role: UserRole;
+  phone?: string;
+  address?: string;
+  extraInfo?: string;
+}
+
+export const supabaseUserService = {
+  // Query Supabase for user by email or phone
+  async findUser(emailOrPhone: string): Promise<SupabaseUser | null> {
+    try {
+      const clean = emailOrPhone.trim().toLowerCase();
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .or(`email.ilike.${clean},phone.eq.${clean}`)
+        .limit(1);
+
+      if (error || !data || data.length === 0) {
+        return null;
+      }
+      return data[0] as SupabaseUser;
+    } catch {
+      return null;
+    }
+  },
+
+  // Authenticate user against Supabase PostgreSQL
+  async authenticate(
+    emailOrPhone: string,
+    password: string,
+    role?: UserRole
+  ): Promise<{ success: boolean; user?: SupabaseUser; error?: string }> {
+    const clean = emailOrPhone.trim().toLowerCase();
+
+    // 1. Check live Supabase PostgreSQL database
+    const dbUser = await this.findUser(clean);
+    if (dbUser) {
+      if (dbUser.password_hash === password) {
+        return { success: true, user: dbUser };
+      } else {
+        return { success: false, error: 'Incorrect password. Please verify and try again.' };
+      }
+    }
+
+    // 2. Check local storage cache of registered accounts
+    try {
+      const localUsers: SupabaseUser[] = JSON.parse(
+        localStorage.getItem('farm2street_registered_users') || '[]'
+      );
+      const localMatch = localUsers.find(
+        (u) =>
+          u.email.toLowerCase() === clean ||
+          (u.phone && u.phone.toLowerCase() === clean)
+      );
+      if (localMatch) {
+        if (localMatch.password_hash === password) {
+          return { success: true, user: localMatch };
+        } else {
+          return { success: false, error: 'Incorrect password. Please verify and try again.' };
+        }
+      }
+    } catch {
+      // fallback
+    }
+
+    // 3. Fallback to schema.sql seeded accounts (Admin, Farmer, Customer)
+    const seedAccounts: Record<string, { pass: string; user: SupabaseUser }> = {
+      'admin@farm2street.org': {
+        pass: 'admin123',
+        user: {
+          id: 1,
+          name: 'Marketplace Admin',
+          email: 'admin@farm2street.org',
+          role: 'admin',
+          phone: '+91 98800 11223',
+          address: 'Central Operations Desk',
+          extraInfo: 'Platform Governance & Traceability Lab',
+        },
+      },
+      'farmer@farm2street.org': {
+        pass: 'farm123',
+        user: {
+          id: 2,
+          name: 'Ramesh Patil',
+          email: 'farmer@farm2street.org',
+          role: 'farmer',
+          phone: '+91 98220 14450',
+          address: 'Sahyadri Agro Belt, Nashik',
+          extraInfo: 'Sahyadri Agro Farms (100% Certified Organic)',
+        },
+      },
+      'pooja@farm2street.org': {
+        pass: 'pooja123',
+        user: {
+          id: 3,
+          name: 'Pooja Sharma',
+          email: 'pooja@farm2street.org',
+          role: 'customer',
+          phone: '+91 98812 77410',
+          address: 'Kalyani Nagar, Pune',
+          extraInfo: 'Morning Harvest (06:00 AM - 09:00 AM)',
+        },
+      },
+    };
+
+    if (seedAccounts[clean]) {
+      const seed = seedAccounts[clean];
+      if (seed.pass === password) {
+        return { success: true, user: seed.user };
+      } else {
+        return { success: false, error: 'Incorrect password. Please verify and try again.' };
+      }
+    }
+
+    // If neither DB nor seeds match, reject with explicit error!
+    return {
+      success: false,
+      error: 'Account not found. Please register a new account or check your credentials.',
+    };
+  },
+
+  // Register new user into Supabase PostgreSQL
+  async register(newUser: {
+    name: string;
+    email: string;
+    password: string;
+    role: UserRole;
+    phone?: string;
+    address?: string;
+    extraInfo?: string;
+  }): Promise<{ success: boolean; user?: SupabaseUser; error?: string }> {
+    try {
+      const cleanEmail = newUser.email.trim().toLowerCase();
+
+      // Check existing in Supabase
+      const existing = await this.findUser(cleanEmail);
+      if (existing) {
+        return {
+          success: false,
+          error: 'An account with this email/mobile already exists. Please log in.',
+        };
+      }
+
+      // Insert into Supabase PostgreSQL users table
+      const { data, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            name: newUser.name.trim(),
+            email: cleanEmail,
+            password_hash: newUser.password,
+            role: newUser.role,
+            phone: newUser.phone || '',
+            address: newUser.address || '',
+          },
+        ])
+        .select();
+
+      let createdUser: SupabaseUser;
+      if (!error && data && data.length > 0) {
+        createdUser = {
+          ...data[0],
+          extraInfo: newUser.extraInfo,
+        } as SupabaseUser;
+      } else {
+        createdUser = {
+          id: `usr_${Date.now().toString().slice(-6)}`,
+          name: newUser.name.trim(),
+          email: cleanEmail,
+          password_hash: newUser.password,
+          role: newUser.role,
+          phone: newUser.phone,
+          address: newUser.address,
+          extraInfo: newUser.extraInfo,
+        };
+      }
+
+      // Cache into local storage
+      try {
+        const localUsers: SupabaseUser[] = JSON.parse(
+          localStorage.getItem('farm2street_registered_users') || '[]'
+        );
+        localUsers.push(createdUser);
+        localStorage.setItem(
+          'farm2street_registered_users',
+          JSON.stringify(localUsers)
+        );
+      } catch {
+        // ignore
+      }
+
+      return { success: true, user: createdUser };
+    } catch (e: any) {
+      return {
+        success: false,
+        error: e?.message || 'Registration failed. Please try again.',
+      };
+    }
+  },
+};
+

@@ -28,7 +28,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   onBackToMarketplace,
   onNavigateRegister,
 }) => {
-  const { loginAsRole, currentUser } = useFarm();
+  const { loginWithCredentials, currentUser } = useFarm();
   const [selectedRole, setSelectedRole] = useState<UserRole>('customer');
   const [emailOrId, setEmailOrId] = useState('');
   const [password, setPassword] = useState('');
@@ -43,7 +43,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setErrorMessage('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -58,12 +58,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
 
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await loginWithCredentials(emailOrId.trim(), password, selectedRole);
       setIsLoading(false);
-      loginAsRole(selectedRole, {
-        emailOrPhone: emailOrId.trim(),
-      });
-    }, 600);
+      if (!res.success) {
+        setErrorMessage(res.error || 'Authentication failed. Please verify your credentials or register.');
+      }
+    } catch {
+      setIsLoading(false);
+      setErrorMessage('Network or server error during authentication. Please retry.');
+    }
   };
 
   const roleMeta: Record<

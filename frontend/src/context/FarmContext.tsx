@@ -15,7 +15,7 @@ import {
   CustomerReview,
 } from '../types';
 import { INITIAL_PRODUCE, TRACEABILITY_MOCK, SUBSCRIPTION_BOXES } from '../data/mockData';
-import { supabase, getSupabaseHealth } from '../lib/supabase';
+import { supabase, getSupabaseHealth, supabaseUserService, SupabaseUser } from '../lib/supabase';
 
 export type ActiveView = 'marketplace' | 'subscriptions' | 'farmer' | 'delivery' | 'admin' | 'login' | 'register';
 
@@ -23,17 +23,23 @@ interface FarmContextType {
   // Authentication & Active User
   currentUser: CurrentUser;
   loginAsRole: (role: UserRole, details?: Partial<CurrentUser>) => void;
+  loginWithCredentials: (
+    identifier: string,
+    passcode: string,
+    role?: UserRole
+  ) => Promise<{ success: boolean; error?: string }>;
   registerUser: (data: {
     role: UserRole;
     name: string;
     emailOrPhone: string;
+    password?: string;
     extraInfo?: string;
     farmName?: string;
     location?: string;
     totalAcres?: number;
     vehicleType?: string;
     vehicleNumber?: string;
-  }) => void;
+  }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isLoginModalOpen: boolean;
   setIsLoginModalOpen: (open: boolean) => void;
@@ -533,21 +539,104 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const registerUser = (data: {
+  // Real database authentication against Supabase PostgreSQL
+  const loginWithCredentials = async (
+    identifier: string,
+    passcode: string,
+    role?: UserRole
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!identifier.trim()) {
+      return { success: false, error: 'Please enter your email or identifier.' };
+    }
+    if (!passcode || passcode.length < 4) {
+      return { success: false, error: 'Please enter your password (minimum 4 characters).' };
+    }
+
+    const authRes = await supabaseUserService.authenticate(identifier, passcode, role);
+    if (!authRes.success || !authRes.user) {
+      return { success: false, error: authRes.error || 'Authentication failed.' };
+    }
+
+    const user = authRes.user;
+    const targetRole = role || user.role || 'customer';
+
+    const newUser: CurrentUser = {
+      id: String(user.id),
+      name: user.name,
+      role: targetRole,
+      emailOrPhone: user.email || user.phone || identifier,
+      extraInfo: user.extraInfo || user.address || `${targetRole.charAt(0).toUpperCase() + targetRole.slice(1)} Portal Active`,
+    };
+
+    if (targetRole === 'farmer') {
+      setActiveView('farmer');
+    } else if (targetRole === 'delivery') {
+      setActiveView('delivery');
+    } else if (targetRole === 'admin') {
+      setActiveView('admin');
+    } else {
+      setActiveView('marketplace');
+    }
+
+    setCurrentUser(newUser);
+    setIsLoginModalOpen(false);
+
+    // Topic 13: Cookies (Remember Me & User Identity tracking)
+    if (typeof document !== 'undefined') {
+      document.cookie = `farm2street_user=${encodeURIComponent(newUser.emailOrPhone)}; path=/; max-age=2592000; SameSite=Lax`;
+      document.cookie = `farm2street_role=${newUser.role}; path=/; max-age=2592000; SameSite=Lax`;
+    }
+
+    // Topic 14: Session Management (Session-scoped active login state)
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(
+        'f2s_active_session',
+        JSON.stringify({
+          id: newUser.id,
+          name: newUser.name,
+          role: newUser.role,
+          emailOrPhone: newUser.emailOrPhone,
+          loginTimestamp: new Date().toISOString(),
+        })
+      );
+    }
+
+    return { success: true };
+  };
+
+  const registerUser = async (data: {
     role: UserRole;
     name: string;
     emailOrPhone: string;
+    password?: string;
     extraInfo?: string;
     farmName?: string;
     location?: string;
     totalAcres?: number;
     vehicleType?: string;
     vehicleNumber?: string;
-  }) => {
-    const id = `user-${Date.now().toString().slice(-6)}`;
-    const newUser: CurrentUser = {
-      id,
+  }): Promise<{ success: boolean; error?: string }> => {
+    const rawPassword = data.password || 'farm123';
+
+    // Register into Supabase PostgreSQL users table
+    const regRes = await supabaseUserService.register({
       name: data.name,
+      email: data.emailOrPhone,
+      password: rawPassword,
+      role: data.role,
+      phone: data.emailOrPhone.includes('@') ? '' : data.emailOrPhone,
+      address: data.location,
+      extraInfo: data.extraInfo || (data.role === 'farmer' ? data.farmName : data.location),
+    });
+
+    if (!regRes.success || !regRes.user) {
+      return { success: false, error: regRes.error || 'Registration failed.' };
+    }
+
+    const created = regRes.user;
+    const newUser: CurrentUser = {
+      id: String(created.id),
+      name: created.name,
       role: data.role,
       emailOrPhone: data.emailOrPhone,
       extraInfo: data.extraInfo || (data.role === 'farmer' ? data.farmName : data.location),
@@ -579,23 +668,15 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setCurrentUser(newUser);
 
-    // Sync to Supabase PostgreSQL 16
-    try {
-      if (supabase) {
-        supabase
-          .from('users')
-          .insert({
-            ...newUser,
-            ...data,
-            registeredAt: new Date().toISOString(),
-          })
-          .then(({ error }) => {
-            if (error) console.warn('Supabase user registration sync:', error);
-          });
-      }
-    } catch (err) {
-      console.warn('Supabase user registration sync fallback:', err);
+    if (typeof document !== 'undefined') {
+      document.cookie = `farm2street_user=${encodeURIComponent(newUser.emailOrPhone)}; path=/; max-age=2592000; SameSite=Lax`;
+      document.cookie = `farm2street_role=${newUser.role}; path=/; max-age=2592000; SameSite=Lax`;
     }
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('f2s_active_session', JSON.stringify(newUser));
+    }
+
+    return { success: true };
   };
 
   // Produce management with Supabase write
@@ -847,6 +928,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         currentUser,
         loginAsRole,
+        loginWithCredentials,
         registerUser,
         logout,
         isLoginModalOpen,
