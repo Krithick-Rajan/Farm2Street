@@ -328,8 +328,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onClearCart,
   onOpenTracker,
 }) => {
-  const { placeOrder, setActiveTrackOrderId } = useFarm();
-  const [address, setAddress] = useState('Flat 402, Green Acre Heights, Central City Enclave');
+  const { placeOrder, setActiveTrackOrderId, currentUser } = useFarm();
+  const [address, setAddress] = useState(currentUser.location || '');
   const [isRazorpayOpen, setIsRazorpayOpen] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState<string | null>(null);
 
@@ -524,6 +524,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Enter your delivery address (Flat, Building, Street, City)"
                     className="w-full text-xs bg-[#f5f4ee] rounded-xl px-3.5 py-2 border border-black/5 focus:outline-none focus:ring-1 focus:ring-[#183c2a]"
                   />
                 </div>
@@ -562,8 +563,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         isOpen={isRazorpayOpen}
         onClose={() => setIsRazorpayOpen(false)}
         amount={total}
-        customerName="Pooja Sharma"
-        customerPhone="+91 98812 77410"
+        customerName={currentUser.name !== 'Guest User' ? currentUser.name : 'Valued Customer'}
+        customerPhone={currentUser.emailOrPhone || '+91 98765 43210'}
         onPaymentSuccess={handlePaymentSuccess}
       />
     </>
@@ -662,7 +663,7 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
                   className="flex items-center gap-1.5 rounded-full bg-[#183c2a] px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-[#2c5b3d] shadow-sm transition-all"
                 >
                   <Sparkles className="h-3 w-3 text-amber-300" />
-                  <span>Demo Step: Advance to "{nextStatus}"</span>
+                  <span>Advance Status to "{nextStatus}"</span>
                 </button>
               )}
             </div>

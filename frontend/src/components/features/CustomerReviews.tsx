@@ -22,8 +22,8 @@ export const CustomerReviews: React.FC = () => {
   const [onlyVerified, setOnlyVerified] = useState(false);
 
   // Form State
-  const [authorName, setAuthorName] = useState(currentUser.name || 'Verified Customer');
-  const [location, setLocation] = useState('Coimbatore, Tamil Nadu');
+  const [authorName, setAuthorName] = useState(currentUser.id !== 'guest' ? currentUser.name : '');
+  const [location, setLocation] = useState(currentUser.location || '');
   const [selectedProduce, setSelectedProduce] = useState(produceList[0]?.name || 'Heirloom Vine Tomatoes');
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
@@ -398,7 +398,7 @@ export const CustomerReviews: React.FC = () => {
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       className="w-full rounded-xl border border-stone-300 px-3 py-2 text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#183c2a]"
-                      placeholder="e.g. Pooja Sharma"
+                      placeholder="e.g. Your Full Name"
                     />
                   </div>
                   <div>

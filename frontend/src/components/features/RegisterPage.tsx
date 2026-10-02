@@ -41,90 +41,41 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(true);
 
-  // Common fields
-  const [name, setName] = useState('Pooja Sharma');
-  const [emailOrPhone, setEmailOrPhone] = useState('+91 98812 77410');
-  const [password, setPassword] = useState('farm2street2026');
-  const [confirmPassword, setConfirmPassword] = useState('farm2street2026');
+  // Common fields (clean empty state for live user input)
+  const [name, setName] = useState('');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   // Customer specific
-  const [deliveryAddress, setDeliveryAddress] = useState('Flat 402, Green Acre Heights');
-  const [deliveryArea, setDeliveryArea] = useState('Metro Residential Cluster - Zone 4');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryArea, setDeliveryArea] = useState('');
   const [preferredWindow, setPreferredWindow] = useState('Morning Harvest (06:00 AM - 09:00 AM)');
 
   // Farmer specific
-  const [farmName, setFarmName] = useState('Green Valley Organic Farms');
-  const [farmLocation, setFarmLocation] = useState('Sector 4, Certified Organic Agro-Belt');
-  const [totalAcres, setTotalAcres] = useState('8.5');
+  const [farmName, setFarmName] = useState('');
+  const [farmLocation, setFarmLocation] = useState('');
+  const [totalAcres, setTotalAcres] = useState('');
   const [farmingType, setFarmingType] = useState('100% Certified Organic (NPOP)');
-  const [kisanId, setKisanId] = useState('KISAN-ORG-2024-8921');
-  const [upiPayoutId, setUpiPayoutId] = useState('ramesh.patel@upi');
+  const [kisanId, setKisanId] = useState('');
+  const [upiPayoutId, setUpiPayoutId] = useState('');
 
   // Delivery partner specific
   const [vehicleType, setVehicleType] = useState('Electric Cargo 2W (Ather 450X)');
-  const [vehicleNumber, setVehicleNumber] = useState('EV-CARGO-4892');
-  const [drivingLicense, setDrivingLicense] = useState('DL-1420110012345');
-  const [operatingZone, setOperatingZone] = useState('Central Metro & City Distribution Cluster');
+  const [vehicleNumber, setVehicleNumber] = useState('');
+  const [drivingLicense, setDrivingLicense] = useState('');
+  const [operatingZone, setOperatingZone] = useState('');
 
   // Admin specific
-  const [adminOrgEmail, setAdminOrgEmail] = useState('a.kulkarni@farm2street.in');
+  const [adminOrgEmail, setAdminOrgEmail] = useState('');
   const [adminDept, setAdminDept] = useState('Platform Governance & Traceability Lab');
-  const [securityKey, setSecurityKey] = useState('ROOT-SEC-2026-F2S');
+  const [securityKey, setSecurityKey] = useState('');
 
-  // Handle switching roles and preset defaults
+  // Handle switching roles and clear errors
   const handleRoleChange = (role: UserRole) => {
     setSelectedRole(role);
     setErrorMessage('');
-
-    if (role === 'farmer') {
-      setName('Ramesh Patel');
-      setEmailOrPhone('+91 94220 18290');
-    } else if (role === 'delivery') {
-      setName('Vikas Shinde');
-      setEmailOrPhone('+91 98230 44812');
-    } else if (role === 'admin') {
-      setName('Dr. Anand Kulkarni');
-      setEmailOrPhone('a.kulkarni@farm2street.in');
-    } else {
-      setName('Pooja Sharma');
-      setEmailOrPhone('+91 98812 77410');
-    }
-  };
-
-  // 1-Click Demo Quick Fill for College Evaluators
-  const handleQuickDemoFill = (role: UserRole) => {
-    setSelectedRole(role);
-    setErrorMessage('');
-    if (role === 'customer') {
-      setName('Pooja Sharma');
-      setEmailOrPhone('+91 98812 77410');
-      setDeliveryAddress('Flat 402, Green Acre Heights');
-      setDeliveryArea('Metro Residential Cluster - Zone 4');
-      setPreferredWindow('Morning Harvest (06:00 AM - 09:00 AM)');
-    } else if (role === 'farmer') {
-      setName('Ramesh Patel');
-      setEmailOrPhone('+91 94220 18290');
-      setFarmName('Green Valley Organic Farms');
-      setFarmLocation('Sector 4, Certified Organic Agro-Belt');
-      setTotalAcres('8.5');
-      setFarmingType('100% Certified Organic (NPOP)');
-      setKisanId('KISAN-ORG-2024-8921');
-      setUpiPayoutId('ramesh.patel@okhdfc');
-    } else if (role === 'delivery') {
-      setName('Vikas Shinde');
-      setEmailOrPhone('+91 98230 44812');
-      setVehicleType('Electric Cargo 2W (Ather 450X)');
-      setVehicleNumber('EV-CARGO-4892');
-      setDrivingLicense('DL-1420110012345');
-      setOperatingZone('Central Metro & City Distribution Cluster');
-    } else if (role === 'admin') {
-      setName('Dr. Anand Kulkarni');
-      setEmailOrPhone('a.kulkarni@farm2street.in');
-      setAdminOrgEmail('a.kulkarni@farm2street.in');
-      setAdminDept('Platform Governance & Traceability Lab');
-      setSecurityKey('ROOT-SEC-2026-F2S');
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -383,21 +334,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
             })}
           </div>
 
-          {/* Quick Demo Pre-fill for Viva presentation */}
-          <div className="mt-3 flex items-center justify-between px-1">
-            <span className="text-[11px] text-stone-400">Exam demonstration:</span>
-            <button
-              type="button"
-              onClick={() => handleQuickDemoFill(selectedRole)}
-              className="text-[11px] font-bold text-[#22613a] hover:underline flex items-center gap-1"
-            >
-              <Sparkles className="h-3 w-3" />
-              <span>Auto-Fill Demo {roleMeta[selectedRole].label}</span>
-            </button>
-          </div>
-
           {/* Form */}
-          <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
             {/* Full Name */}
             <div>
               <label className="text-xs font-semibold text-[#29352d] block mb-1.5">

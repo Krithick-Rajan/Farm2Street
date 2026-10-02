@@ -30,26 +30,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 }) => {
   const { loginAsRole, currentUser } = useFarm();
   const [selectedRole, setSelectedRole] = useState<UserRole>('customer');
-  const [emailOrId, setEmailOrId] = useState('pooja.sharma@example.com');
-  const [password, setPassword] = useState('farm2street2026');
+  const [emailOrId, setEmailOrId] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Handle role change and adjust default placeholder
+  // Handle role change and clear errors
   const handleRoleChange = (role: UserRole) => {
     setSelectedRole(role);
     setErrorMessage('');
-    if (role === 'farmer') {
-      setEmailOrId('KISAN-MH-2024-8921');
-    } else if (role === 'delivery') {
-      setEmailOrId('DRV-PUN-004');
-    } else if (role === 'admin') {
-      setEmailOrId('admin@farm2street.in');
-    } else {
-      setEmailOrId('pooja.sharma@example.com');
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -57,28 +48,22 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setErrorMessage('');
 
     if (!emailOrId.trim()) {
-      setErrorMessage('Please enter your email address or ID.');
+      setErrorMessage(`Please enter your ${roleMeta[selectedRole].inputLabel.toLowerCase()}.`);
       return;
     }
 
     if (!password || password.length < 4) {
-      setErrorMessage('Please enter a valid password.');
+      setErrorMessage('Please enter a valid password (minimum 4 characters).');
       return;
     }
 
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      loginAsRole(selectedRole);
-    }, 850);
-  };
-
-  const handleQuickDemoLogin = (role: UserRole) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      loginAsRole(role);
-    }, 450);
+      loginAsRole(selectedRole, {
+        emailOrPhone: emailOrId.trim(),
+      });
+    }, 600);
   };
 
   const roleMeta: Record<
@@ -88,7 +73,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       icon: any;
       inputLabel: string;
       inputPlaceholder: string;
-      demoName: string;
       quote: string;
     }
   > = {
@@ -96,24 +80,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       label: 'Customer',
       icon: User,
       inputLabel: 'Email or Mobile Number',
-      inputPlaceholder: 'pooja.sharma@example.com',
-      demoName: 'Pooja Sharma (Customer)',
+      inputPlaceholder: 'name@example.com or 10-digit mobile',
       quote: 'Direct harvest-to-kitchen connection with morning-picked greens.',
     },
     farmer: {
       label: 'Farmer',
       icon: Tractor,
       inputLabel: 'Kisan Registration ID / Mobile',
-      inputPlaceholder: 'KISAN-MH-2024-8921',
-      demoName: 'Ramesh Patel (Green Valley Farm)',
+      inputPlaceholder: 'Enter Kisan ID or registered mobile',
       quote: '+24% higher realization without intermediary commission cuts.',
     },
     delivery: {
       label: 'Delivery Partner',
       icon: Truck,
       inputLabel: 'Fleet Driver ID / Vehicle Number',
-      inputPlaceholder: 'DRV-PUN-004 (MH 12 ET 4892)',
-      demoName: 'Vikas Shinde (EV Fleet)',
+      inputPlaceholder: 'Enter driver ID or vehicle number',
       quote: 'Clean electric transit with turn-by-turn farm-to-door navigation.',
     },
     admin: {
@@ -121,7 +102,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       icon: ShieldCheck,
       inputLabel: 'Operator Administrator Email',
       inputPlaceholder: 'admin@farm2street.in',
-      demoName: 'SuperAdmin (Governance)',
       quote: 'Platform oversight, KYC approvals, and automated T+1 settlements.',
     },
   };
@@ -378,55 +358,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             </button>
           </form>
 
-          {/* Quick Demo Switcher - Clean & Minimal */}
-          <div className="mt-6 pt-5 border-t border-stone-200/80 shrink-0">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400">
-                1-Click Demo Profiles
-              </span>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('customer')}
-                className="py-2 px-1 rounded-xl border border-stone-200/90 bg-white hover:bg-stone-50 hover:border-stone-300 text-[11px] font-semibold text-stone-700 flex items-center justify-center gap-1.5 transition-all shadow-2xs"
-              >
-                <User className="h-3 w-3 text-emerald-700" />
-                <span>Customer</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('farmer')}
-                className="py-2 px-1 rounded-xl border border-stone-200/90 bg-white hover:bg-stone-50 hover:border-stone-300 text-[11px] font-semibold text-stone-700 flex items-center justify-center gap-1.5 transition-all shadow-2xs"
-              >
-                <Tractor className="h-3 w-3 text-amber-700" />
-                <span>Farmer</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('delivery')}
-                className="py-2 px-1 rounded-xl border border-stone-200/90 bg-white hover:bg-stone-50 hover:border-stone-300 text-[11px] font-semibold text-stone-700 flex items-center justify-center gap-1.5 transition-all shadow-2xs"
-              >
-                <Truck className="h-3 w-3 text-sky-700" />
-                <span>Delivery</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('admin')}
-                className="py-2 px-1 rounded-xl border border-stone-200/90 bg-white hover:bg-stone-50 hover:border-stone-300 text-[11px] font-semibold text-stone-700 flex items-center justify-center gap-1.5 transition-all shadow-2xs"
-              >
-                <ShieldCheck className="h-3 w-3 text-purple-700" />
-                <span>Admin</span>
-              </button>
-            </div>
-          </div>
-
           {/* Registration Footer */}
-          <div className="mt-6 text-center text-[#7c857f] text-xs shrink-0">
+          <div className="mt-8 text-center text-[#7c857f] text-xs shrink-0">
             New to Farm2Street?
             <button
               type="button"
-              onClick={() => (onNavigateRegister ? onNavigateRegister() : handleQuickDemoLogin('customer'))}
+              onClick={() => onNavigateRegister && onNavigateRegister()}
               className="ml-1.5 text-[#17482c] font-bold hover:underline cursor-pointer"
             >
               Create an account

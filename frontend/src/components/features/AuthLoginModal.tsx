@@ -32,23 +32,26 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
   const { loginAsRole, currentUser } = useFarm();
   const [selectedRole, setSelectedRole] = useState<UserRole>(defaultRole);
 
-  // Form states
-  const [customerPhone, setCustomerPhone] = useState('+91 98812 77410');
-  const [farmerKisanId, setFarmerKisanId] = useState('KISAN-MH-2024-8921');
-  const [driverId, setDriverId] = useState('DRV-PUN-004');
-  const [adminEmail, setAdminEmail] = useState('admin@farm2street.in');
-  const [passcode, setPasscode] = useState('••••••••');
+  // Form states (clean empty inputs for live authentication)
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [farmerKisanId, setFarmerKisanId] = useState('');
+  const [driverId, setDriverId] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [passcode, setPasscode] = useState('');
 
   if (!isOpen) return null;
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    loginAsRole(selectedRole);
-    onClose();
-  };
+    let identifier = '';
+    if (selectedRole === 'farmer') identifier = farmerKisanId.trim();
+    else if (selectedRole === 'delivery') identifier = driverId.trim();
+    else if (selectedRole === 'admin') identifier = adminEmail.trim();
+    else identifier = customerPhone.trim();
 
-  const handleQuickDemoLogin = (role: UserRole) => {
-    loginAsRole(role);
+    loginAsRole(selectedRole, {
+      emailOrPhone: identifier,
+    });
     onClose();
   };
 
@@ -61,7 +64,6 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       accentColor: string;
       buttonBg: string;
       responsibilities: string[];
-      demoUser: string;
     }
   > = {
     customer: {
@@ -70,7 +72,6 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       icon: User,
       accentColor: 'text-emerald-700',
       buttonBg: 'bg-[#183c2a] hover:bg-[#2c5b3d]',
-      demoUser: 'Pooja Sharma (+91 98812 77410)',
       responsibilities: [
         'Browse morning-harvested produce direct from growers',
         'Place orders with instant Razorpay checkout',
@@ -85,7 +86,6 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       icon: Tractor,
       accentColor: 'text-amber-700',
       buttonBg: 'bg-[#8c5e2d] hover:bg-[#a67138]',
-      demoUser: 'Ramesh Patel (Green Valley Organic Farms)',
       responsibilities: [
         'Register farm profile, soil health, and organic certs',
         'Add vegetables and produce listings with live images & pricing',
@@ -100,7 +100,6 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       icon: Truck,
       accentColor: 'text-sky-700',
       buttonBg: 'bg-[#0f4c3a] hover:bg-[#186650]',
-      demoUser: 'Vikas Shinde (Electric Cargo Ather 450X)',
       responsibilities: [
         'View daily assigned delivery manifests and pickup runs',
         'Navigate from farm gate to customer doorstep using Maps/Routing',
@@ -115,7 +114,6 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       icon: ShieldCheck,
       accentColor: 'text-purple-700',
       buttonBg: 'bg-[#131920] hover:bg-[#232f3e]',
-      demoUser: 'SuperAdmin Operator (Root Security Key)',
       responsibilities: [
         'Manage users (farmers, customers, delivery partners)',
         'Review and approve farmer KYC and organic certifications',
@@ -215,7 +213,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
-                      placeholder="+91 98812 77410"
+                      placeholder="e.g. +91 98765 43210 or email"
                     />
                   </div>
                 </div>
@@ -232,6 +230,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       type="text"
                       value={farmerKisanId}
                       onChange={(e) => setFarmerKisanId(e.target.value)}
+                      placeholder="e.g. KISAN-MH-2024-8921"
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-mono font-medium"
                     />
                   </div>
@@ -249,6 +248,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       type="text"
                       value={driverId}
                       onChange={(e) => setDriverId(e.target.value)}
+                      placeholder="e.g. DRV-PUN-004"
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-mono font-medium"
                     />
                   </div>
@@ -266,6 +266,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       type="email"
                       value={adminEmail}
                       onChange={(e) => setAdminEmail(e.target.value)}
+                      placeholder="admin@farm2street.in"
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
                     />
                   </div>
@@ -282,29 +283,20 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                     type="password"
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
+                    placeholder="Enter password / OTP"
                     className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
                   />
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-2 space-y-2">
+              <div className="pt-2">
                 <button
                   type="submit"
                   className={`w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md transition-all ${currentMeta.buttonBg}`}
                 >
                   <span>Sign In as {selectedRole.toUpperCase()}</span>
                   <ArrowRight className="h-4 w-4" />
-                </button>
-
-                {/* Quick 1-Click Demo Login Button for college presentations */}
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin(selectedRole)}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-100 transition-all"
-                >
-                  <Sparkles className="h-4 w-4 text-amber-500" />
-                  <span>1-Click Demo Login ({currentMeta.demoUser})</span>
                 </button>
               </div>
             </form>

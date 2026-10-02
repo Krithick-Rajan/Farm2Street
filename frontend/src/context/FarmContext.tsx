@@ -361,18 +361,18 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (savedSession) {
           const parsed = JSON.parse(savedSession);
           return {
-            id: parsed.id || 'cust-101',
-            name: parsed.name || 'Pooja Sharma',
+            id: parsed.id || `usr-${Date.now().toString().slice(-4)}`,
+            name: parsed.name || 'User',
             role: parsed.role || 'customer',
-            emailOrPhone: parsed.emailOrPhone || '+91 98812 77410',
-            extraInfo: 'Session-Restored User',
+            emailOrPhone: parsed.emailOrPhone || '',
+            extraInfo: parsed.extraInfo || 'Active User',
           };
         }
       } catch {
         // Fallback
       }
     }
-    return DEFAULT_CUSTOMER;
+    return GUEST_USER;
   });
   const [activeView, setActiveView] = useState<ActiveView>('marketplace');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
@@ -464,46 +464,34 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Authentication operations
   const loginAsRole = (role: UserRole, details?: Partial<CurrentUser>) => {
-    let newUser: CurrentUser;
+    const rawIdentifier = details?.emailOrPhone || details?.name || '';
+    let derivedName = details?.name;
+    if (!derivedName && rawIdentifier) {
+      const part = rawIdentifier.includes('@') ? rawIdentifier.split('@')[0] : rawIdentifier;
+      derivedName = part.charAt(0).toUpperCase() + part.slice(1);
+    }
+    if (!derivedName) {
+      derivedName = role.charAt(0).toUpperCase() + role.slice(1) + ' User';
+    }
+
+    const userId = details?.id || `${role.slice(0, 3)}-${Date.now().toString().slice(-4)}`;
+
+    const newUser: CurrentUser = {
+      id: userId,
+      name: derivedName,
+      role: role,
+      emailOrPhone: details?.emailOrPhone || rawIdentifier,
+      extraInfo: details?.extraInfo || `${role.charAt(0).toUpperCase() + role.slice(1)} Portal Active`,
+      ...details,
+    };
+
     if (role === 'farmer') {
-      newUser = {
-        id: 'frm-001',
-        name: 'Ramesh Patel',
-        role: 'farmer',
-        emailOrPhone: '+91 94220 18290',
-        extraInfo: 'Green Valley Organic Farms',
-        ...details,
-      };
       setActiveView('farmer');
     } else if (role === 'delivery') {
-      newUser = {
-        id: 'drv-004',
-        name: 'Vikas Shinde',
-        role: 'delivery',
-        emailOrPhone: '+91 98230 44812',
-        extraInfo: 'EV Cargo Driver (MH 12 ET 4892)',
-        ...details,
-      };
       setActiveView('delivery');
     } else if (role === 'admin') {
-      newUser = {
-        id: 'adm-001',
-        name: 'SuperAdmin Operator',
-        role: 'admin',
-        emailOrPhone: 'admin@farm2street.in',
-        extraInfo: 'Root Governance Console',
-        ...details,
-      };
       setActiveView('admin');
     } else {
-      newUser = {
-        id: 'cust-101',
-        name: 'Pooja Sharma',
-        role: 'customer',
-        emailOrPhone: '+91 98812 77410',
-        extraInfo: 'Central Residential Hub',
-        ...details,
-      };
       setActiveView('marketplace');
     }
 

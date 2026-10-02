@@ -17,6 +17,7 @@ export interface CurrentUser {
   emailOrPhone: string;
   avatar?: string;
   extraInfo?: string;
+  location?: string;
 }
 
 export interface Produce {
