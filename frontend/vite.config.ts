@@ -13,25 +13,13 @@ export default defineConfig({
   },
   build: {
     target: 'es2022',
-    cssCodeSplit: true,
-    assetsInlineLimit: 4096,
-    chunkSizeWarningLimit: 600,
+    cssCodeSplit: false,
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
       output: {
-        manualChunks(id: string) {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-            return 'vendor-react';
-          }
-          if (id.includes('node_modules/leaflet')) {
-            return 'vendor-leaflet';
-          }
-          if (id.includes('node_modules/@supabase')) {
-            return 'vendor-cloud';
-          }
-          if (id.includes('node_modules/lucide-react')) {
-            return 'vendor-icons';
-          }
-        },
+        entryFileNames: 'assets/app.js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name].[ext]',
       },
     },
   },

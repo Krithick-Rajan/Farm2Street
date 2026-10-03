@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState } from 'react';
 import { FarmHero, TrailingCursor } from './components/ui/UiWidgets';
 import { CoverFlowCarousel, defaultDishes } from './components/ui/3-d-coverflow-carousel';
 import { Navbar, LeftSlideNav, Footer } from './components/layout/Navbar';
@@ -8,46 +8,14 @@ import { CustomerReviews } from './components/features/CustomerReviews';
 import { TraceabilitySection } from './components/features/TraceabilitySection';
 import { FarmProvider, useFarm } from './context/FarmContext';
 import { CartItem, Produce, SubscriptionBox } from './types';
-
-// Code-split dynamic views for minimum initial load latency
-const SubscriptionPlansPage = lazy(() =>
-  import('./components/features/SubscriptionPlansPage').then((m) => ({
-    default: m.SubscriptionPlansPage,
-  }))
-);
-const LoginPage = lazy(() =>
-  import('./components/features/LoginPage').then((m) => ({ default: m.LoginPage }))
-);
-const RegisterPage = lazy(() =>
-  import('./components/features/RegisterPage').then((m) => ({ default: m.RegisterPage }))
-);
-const FarmerPortal = lazy(() =>
-  import('./components/features/FarmerPortal').then((m) => ({ default: m.FarmerPortal }))
-);
-const DeliveryPortal = lazy(() =>
-  import('./components/features/DeliveryPortal').then((m) => ({ default: m.DeliveryPortal }))
-);
-const AdminCenter = lazy(() =>
-  import('./components/features/AdminCenter').then((m) => ({ default: m.AdminCenter }))
-);
-const CartDrawer = lazy(() =>
-  import('./components/features/OrderModals').then((m) => ({ default: m.CartDrawer }))
-);
-const OrderTrackerModal = lazy(() =>
-  import('./components/features/OrderModals').then((m) => ({ default: m.OrderTrackerModal }))
-);
-const AuthLoginModal = lazy(() =>
-  import('./components/features/AuthLoginModal').then((m) => ({ default: m.AuthLoginModal }))
-);
-
-const ViewLoadingFallback = () => (
-  <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center select-none">
-    <div className="w-10 h-10 border-3 border-[#183c2a]/20 border-t-[#183c2a] rounded-full animate-spin mb-4" />
-    <span className="text-xs font-bold uppercase tracking-widest text-[#183c2a]/70">
-      Loading Experience...
-    </span>
-  </div>
-);
+import { SubscriptionPlansPage } from './components/features/SubscriptionPlansPage';
+import { LoginPage } from './components/features/LoginPage';
+import { RegisterPage } from './components/features/RegisterPage';
+import { FarmerPortal } from './components/features/FarmerPortal';
+import { DeliveryPortal } from './components/features/DeliveryPortal';
+import { AdminCenter } from './components/features/AdminCenter';
+import { CartDrawer, OrderTrackerModal } from './components/features/OrderModals';
+import { AuthLoginModal } from './components/features/AuthLoginModal';
 
 function AppContent() {
   const {
@@ -187,146 +155,138 @@ function AppContent() {
       )}
 
       {/* 4. Screen Views Based on Active Portal */}
-      <Suspense fallback={<ViewLoadingFallback />}>
-        {/* VIEW A: MAIN FRESH PRODUCE MARKETPLACE */}
-        {activeView === 'marketplace' && (
-          <main>
-            {/* Hero Video Scrub */}
-            <FarmHero
-              title="FROM FARM"
-              tagline="TO STREET — Fresh harvests direct from nearby growers."
-              scrollHint="SCROLL TO HARVEST"
-              scrubDistance={2400}
-            />
-
-            {/* Fresh Harvests Produce Section */}
-            <FreshHarvests
-              produceList={produceList}
-              onAddToCart={handleAddToCart}
-              onInspectBatch={handleInspectBatch}
-            />
-
-            {/* 3D Produce Coverflow Carousel */}
-            <section id="discovery-3d" className="relative py-10 bg-[#07100b]">
-              <div className="text-center pt-8 pb-2">
-                <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#c5a880]">
-                  Interactive 3D Produce Stage
-                </span>
-                <h2 className="font-sans text-3xl md:text-5xl font-bold tracking-[-0.04em] text-white mt-2">
-                  Featured Harvest Discovery
-                </h2>
-                <p className="text-xs md:text-sm text-stone-400 mt-2 max-w-lg mx-auto px-4">
-                  Explore morning-picked produce in 3D perspective. Sweep left or right on your mousepad, drag, click, or use arrow keys.
-                </p>
-              </div>
-              <CoverFlowCarousel
-                items={defaultDishes}
-                sectionLabel="DIRECT ORCHARD & FIELD PICKS"
-                autoplay={true}
-                autoplayDelay={4000}
-                onCtaClick={(dish) => {
-                  const matched =
-                    produceList.find((p) =>
-                      p.name.toLowerCase().includes(dish.titleLine1.toLowerCase().split(' ')[0])
-                    ) || produceList[0];
-                  handleAddToCart(matched);
-                }}
-              />
-            </section>
-
-            {/* Produce Traceability Engine */}
-            <TraceabilitySection activeBatchId={selectedBatchId} />
-
-            {/* Partner Micro-Farms Showcase */}
-            <LocalFarms />
-
-            {/* Dynamic Customer Reviews */}
-            <CustomerReviews />
-
-            {/* Editorial Footer */}
-            <Footer />
-          </main>
-        )}
-
-        {/* VIEW B: DEDICATED SEPARATE SUBSCRIPTION PLANS PAGE */}
-        {activeView === 'subscriptions' && (
-          <>
-            <SubscriptionPlansPage
-              onBackToMarketplace={() => setActiveView('marketplace')}
-              onSubscribe={handleSubscribeBox}
-            />
-            <Footer />
-          </>
-        )}
-
-        {/* VIEW C: FULL-SCREEN SPLIT-LAYOUT LOGIN EXPERIENCE */}
-        {activeView === 'login' && (
-          <LoginPage
-            onBackToMarketplace={() => setActiveView('marketplace')}
-            onNavigateRegister={() => setActiveView('register')}
+      {/* VIEW A: MAIN FRESH PRODUCE MARKETPLACE */}
+      {activeView === 'marketplace' && (
+        <main>
+          {/* Hero Video Scrub */}
+          <FarmHero
+            title="FROM FARM"
+            tagline="TO STREET — Fresh harvests direct from nearby growers."
+            scrollHint="SCROLL TO HARVEST"
+            scrubDistance={2400}
           />
-        )}
 
-        {/* VIEW C.2: FULL-SCREEN SPLIT-LAYOUT REGISTRATION EXPERIENCE */}
-        {activeView === 'register' && (
-          <RegisterPage
-            onBackToMarketplace={() => setActiveView('marketplace')}
-            onNavigateLogin={() => setActiveView('login')}
+          {/* Fresh Harvests Produce Section */}
+          <FreshHarvests
+            produceList={produceList}
+            onAddToCart={handleAddToCart}
+            onInspectBatch={handleInspectBatch}
           />
-        )}
 
-        {/* VIEW D: FARMER PRODUCER PORTAL (Actor 1) */}
-        {activeView === 'farmer' && <FarmerPortal />}
+          {/* 3D Produce Coverflow Carousel */}
+          <section id="discovery-3d" className="relative py-10 bg-[#07100b]">
+            <div className="text-center pt-8 pb-2">
+              <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#c5a880]">
+                Interactive 3D Produce Stage
+              </span>
+              <h2 className="font-sans text-3xl md:text-5xl font-bold tracking-[-0.04em] text-white mt-2">
+                Featured Harvest Discovery
+              </h2>
+              <p className="text-xs md:text-sm text-stone-400 mt-2 max-w-lg mx-auto px-4">
+                Explore morning-picked produce in 3D perspective. Sweep left or right on your mousepad, drag, click, or use arrow keys.
+              </p>
+            </div>
+            <CoverFlowCarousel
+              items={defaultDishes}
+              sectionLabel="DIRECT ORCHARD & FIELD PICKS"
+              autoplay={true}
+              autoplayDelay={4000}
+              onCtaClick={(dish) => {
+                const matched =
+                  produceList.find((p) =>
+                    p.name.toLowerCase().includes(dish.titleLine1.toLowerCase().split(' ')[0])
+                  ) || produceList[0];
+                handleAddToCart(matched);
+              }}
+            />
+          </section>
 
-        {/* VIEW E: DELIVERY PARTNER OPERATOR PORTAL (Actor 3) */}
-        {activeView === 'delivery' && <DeliveryPortal />}
+          {/* Produce Traceability Engine */}
+          <TraceabilitySection activeBatchId={selectedBatchId} />
 
-        {/* VIEW F: ADMIN CONTROL CENTER (Actor 4) */}
-        {activeView === 'admin' && <AdminCenter />}
-      </Suspense>
+          {/* Partner Micro-Farms Showcase */}
+          <LocalFarms />
+
+          {/* Dynamic Customer Reviews */}
+          <CustomerReviews />
+
+          {/* Editorial Footer */}
+          <Footer />
+        </main>
+      )}
+
+      {/* VIEW B: DEDICATED SEPARATE SUBSCRIPTION PLANS PAGE */}
+      {activeView === 'subscriptions' && (
+        <>
+          <SubscriptionPlansPage
+            onBackToMarketplace={() => setActiveView('marketplace')}
+            onSubscribe={handleSubscribeBox}
+          />
+          <Footer />
+        </>
+      )}
+
+      {/* VIEW C: FULL-SCREEN SPLIT-LAYOUT LOGIN EXPERIENCE */}
+      {activeView === 'login' && (
+        <LoginPage
+          onBackToMarketplace={() => setActiveView('marketplace')}
+          onNavigateRegister={() => setActiveView('register')}
+        />
+      )}
+
+      {/* VIEW C.2: FULL-SCREEN SPLIT-LAYOUT REGISTRATION EXPERIENCE */}
+      {activeView === 'register' && (
+        <RegisterPage
+          onBackToMarketplace={() => setActiveView('marketplace')}
+          onNavigateLogin={() => setActiveView('login')}
+        />
+      )}
+
+      {/* VIEW D: FARMER PRODUCER PORTAL (Actor 1) */}
+      {activeView === 'farmer' && <FarmerPortal />}
+
+      {/* VIEW E: DELIVERY PARTNER OPERATOR PORTAL (Actor 3) */}
+      {activeView === 'delivery' && <DeliveryPortal />}
+
+      {/* VIEW F: ADMIN CONTROL CENTER (Actor 4) */}
+      {activeView === 'admin' && <AdminCenter />}
 
       {/* MODALS */}
 
       {/* Cart Drawer with Razorpay Payment Integration */}
       {isCartOpen && (
-        <Suspense fallback={null}>
-          <CartDrawer
-            isOpen={isCartOpen}
-            onClose={() => setIsCartOpen(false)}
-            items={cartItems}
-            onUpdateQty={handleUpdateQty}
-            onRemoveItem={handleRemoveItem}
-            onClearCart={handleClearCart}
-            onOpenTracker={(orderId) => {
-              setActiveTrackOrderId(orderId);
-              setIsTrackerOpen(true);
-            }}
-          />
-        </Suspense>
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          items={cartItems}
+          onUpdateQty={handleUpdateQty}
+          onRemoveItem={handleRemoveItem}
+          onClearCart={handleClearCart}
+          onOpenTracker={(orderId) => {
+            setActiveTrackOrderId(orderId);
+            setIsTrackerOpen(true);
+          }}
+        />
       )}
 
       {/* Multi-Actor Authentication Modal */}
       {isLoginModalOpen && (
-        <Suspense fallback={null}>
-          <AuthLoginModal
-            isOpen={isLoginModalOpen}
-            onClose={() => setIsLoginModalOpen(false)}
-            defaultRole={currentUser.role}
-          />
-        </Suspense>
+        <AuthLoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          defaultRole={currentUser.role}
+        />
       )}
 
-      {/* 8-Stage Order Lifecycle Tracker Modal (Code Split) */}
+      {/* 8-Stage Order Lifecycle Tracker Modal */}
       {isTrackerOpen && (
-        <Suspense fallback={null}>
-          <OrderTrackerModal
-            isOpen={isTrackerOpen}
-            onClose={() => setIsTrackerOpen(false)}
-            order={trackedOrder}
-            onAdvanceStatus={(orderId, nextStatus) => updateOrderStatus(orderId, nextStatus)}
-            onInspectBatch={handleInspectBatch}
-          />
-        </Suspense>
+        <OrderTrackerModal
+          isOpen={isTrackerOpen}
+          onClose={() => setIsTrackerOpen(false)}
+          order={trackedOrder}
+          onAdvanceStatus={(orderId, nextStatus) => updateOrderStatus(orderId, nextStatus)}
+          onInspectBatch={handleInspectBatch}
+        />
       )}
     </div>
   );
