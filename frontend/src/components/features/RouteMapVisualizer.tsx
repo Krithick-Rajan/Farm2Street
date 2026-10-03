@@ -27,8 +27,8 @@ export const RouteMapVisualizer: React.FC<RouteMapVisualizerProps> = ({
   distanceKm,
   estimatedMinutes,
   status,
-  driverName = 'Vikas Shinde',
-  vehicleNumber = 'MH 12 ET 4892',
+  driverName = 'Delivery Partner',
+  vehicleNumber = 'EV-CARGO',
 }) => {
   const [activeTab, setActiveTab] = useState<'map' | 'turn_by_turn'>('map');
   const mapContainerRef = useRef<HTMLDivElement | null>(null);

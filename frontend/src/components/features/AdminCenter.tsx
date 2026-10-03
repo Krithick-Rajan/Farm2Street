@@ -44,9 +44,9 @@ export const AdminCenter: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Calculate platform financial stats
-  const totalGMV = orders.reduce((sum, o) => sum + o.totalAmount, 0) + 482000;
+  const totalGMV = orders.reduce((sum, o) => sum + o.totalAmount, 0);
   const activeOrdersCount = orders.filter((o) => o.status !== 'Delivered').length;
-  const totalDeliveriesCount = orders.filter((o) => o.status === 'Delivered').length + 840;
+  const totalDeliveriesCount = orders.filter((o) => o.status === 'Delivered').length;
 
   // Filtered orders
   const filteredOrders = orders.filter((o) => {
@@ -338,44 +338,52 @@ export const AdminCenter: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 text-stone-800">
-                  {filteredOrders.map((o) => (
-                    <tr key={o.id} className="hover:bg-stone-50">
-                      <td className="py-3 font-mono font-bold text-[#183c2a]">{o.id}</td>
-                      <td className="py-3">
-                        <div className="font-semibold text-stone-900">{o.customerName}</div>
-                        <div className="text-[10px] text-stone-400 truncate max-w-[140px]">{o.deliveryAddress}</div>
-                      </td>
-                      <td className="py-3 font-medium text-stone-700">{o.farmerName}</td>
-                      <td className="py-3 font-bold text-stone-900">₹{o.totalAmount}</td>
-                      <td className="py-3">
-                        <span className="rounded bg-emerald-100 text-emerald-800 px-1.5 py-0.5 text-[10px] font-bold">
-                          {o.paymentMethod}
-                        </span>
-                      </td>
-                      <td className="py-3">
-                        <span className="rounded-full bg-stone-100 border border-stone-200 px-2.5 py-1 text-[10px] font-bold text-stone-800">
-                          {o.status}
-                        </span>
-                      </td>
-                      <td className="py-3 text-right min-w-[180px]">
-                        <CustomSelect
-                          value={o.status}
-                          onChange={(val) => updateOrderStatus(o.id, val as DeliveryStatus, 'Admin override')}
-                          options={[
-                            'Order Placed',
-                            'Order Confirmed',
-                            'Preparing',
-                            'Ready for Pickup',
-                            'Delivery Partner Assigned',
-                            'Picked Up',
-                            'Out for Delivery',
-                            'Delivered',
-                          ]}
-                          size="sm"
-                        />
+                  {filteredOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-stone-400 text-xs font-medium">
+                        No orders recorded yet. As orders are placed by customers, they will appear here in real-time.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredOrders.map((o) => (
+                      <tr key={o.id} className="hover:bg-stone-50">
+                        <td className="py-3 font-mono font-bold text-[#183c2a]">{o.id}</td>
+                        <td className="py-3">
+                          <div className="font-semibold text-stone-900">{o.customerName}</div>
+                          <div className="text-[10px] text-stone-400 truncate max-w-[140px]">{o.deliveryAddress}</div>
+                        </td>
+                        <td className="py-3 font-medium text-stone-700">{o.farmerName}</td>
+                        <td className="py-3 font-bold text-stone-900">₹{o.totalAmount}</td>
+                        <td className="py-3">
+                          <span className="rounded bg-emerald-100 text-emerald-800 px-1.5 py-0.5 text-[10px] font-bold">
+                            {o.paymentMethod}
+                          </span>
+                        </td>
+                        <td className="py-3">
+                          <span className="rounded-full bg-stone-100 border border-stone-200 px-2.5 py-1 text-[10px] font-bold text-stone-800">
+                            {o.status}
+                          </span>
+                        </td>
+                        <td className="py-3 text-right min-w-[180px]">
+                          <CustomSelect
+                            value={o.status}
+                            onChange={(val) => updateOrderStatus(o.id, val as DeliveryStatus, 'Admin override')}
+                            options={[
+                              'Order Placed',
+                              'Order Confirmed',
+                              'Preparing',
+                              'Ready for Pickup',
+                              'Delivery Partner Assigned',
+                              'Picked Up',
+                              'Out for Delivery',
+                              'Delivered',
+                            ]}
+                            size="sm"
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

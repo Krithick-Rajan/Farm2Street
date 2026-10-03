@@ -121,15 +121,15 @@ const INITIAL_FARMER_PROFILE: FarmerProfile = {
 };
 
 const INITIAL_DELIVERY_PROFILE: DeliveryPartnerProfile = {
-  id: 'drv-004',
-  name: 'Vikas Shinde',
-  phone: '+91 98230 44812',
-  vehicleType: 'Electric Cargo Scooter (Ather 450X)',
-  vehicleNumber: 'EV-CARGO-4892',
-  rating: 4.92,
-  activeDeliveriesCount: 2,
-  completedDeliveriesToday: 6,
-  todayEarnings: 840,
+  id: 'drv-001',
+  name: 'Eco Delivery Partner',
+  phone: '',
+  vehicleType: 'Electric Transit Cargo',
+  vehicleNumber: 'EV-TRANSIT-01',
+  rating: 5.0,
+  activeDeliveriesCount: 0,
+  completedDeliveriesToday: 0,
+  todayEarnings: 0,
   status: 'available',
 };
 
@@ -188,115 +188,7 @@ const INITIAL_SUBSCRIPTIONS: UserSubscription[] = [
   },
 ];
 
-const INITIAL_ORDERS: Order[] = [
-  {
-    id: 'F2S-ORD-849201',
-    customerId: 'cust-101',
-    customerName: 'Verified Member',
-    customerPhone: '+91 98812 77410',
-    deliveryAddress: 'Green Acre Heights, Central City Enclave',
-    items: [
-      {
-        produceId: 'prod-1',
-        name: 'Heirloom Vine Tomatoes',
-        price: 45,
-        quantity: 2,
-        unit: 'kg',
-        farmer: 'Green Valley Farm',
-      },
-      {
-        produceId: 'prod-4',
-        name: 'Tender Malabar Spinach',
-        price: 25,
-        quantity: 2,
-        unit: 'bunch',
-        farmer: 'Green Valley Farm',
-      },
-    ],
-    subtotal: 140,
-    deliveryFee: 30,
-    totalAmount: 170,
-    status: 'Out for Delivery',
-    paymentMethod: 'Razorpay UPI',
-    paymentId: 'pay_Pq89f2X1M90',
-    razorpayOrderId: 'order_Pq89e09KL2',
-    paymentStatus: 'paid',
-    farmerName: 'Green Valley Farm (Ramesh Patel)',
-    farmPickupLocation: 'Sector 4, Certified Organic Agro-Belt',
-    assignedDeliveryPartner: {
-      id: 'drv-004',
-      name: 'Vikas Shinde',
-      phone: '+91 98230 44812',
-      vehicle: 'Electric Cargo EV (EV-CARGO-4892)',
-    },
-    batchId: 'F2S-TM-20260920-01',
-    distanceKm: 18.4,
-    estimatedDeliveryMinutes: 22,
-    createdAt: 'Today, 07:15 AM',
-    updatedAt: 'Today, 09:40 AM',
-    timeline: [
-      { status: 'Order Placed', timestamp: '07:15 AM', note: 'Customer completed order on portal.' },
-      { status: 'Order Confirmed', timestamp: '07:16 AM', note: 'Razorpay payment verified (pay_Pq89f2X1M90).' },
-      { status: 'Preparing', timestamp: '07:30 AM', note: 'Ramesh Patel harvested and packed produce.' },
-      { status: 'Ready for Pickup', timestamp: '08:15 AM', note: 'Sealed crate ready at farm gate.' },
-      { status: 'Delivery Partner Assigned', timestamp: '08:20 AM', note: 'Vikas Shinde assigned via routing service.' },
-      { status: 'Picked Up', timestamp: '08:45 AM', note: 'Order collected from farm gate.' },
-      { status: 'Out for Delivery', timestamp: '09:20 AM', note: 'Driver approaching customer destination (ETA 22 mins).' },
-    ],
-  },
-  {
-    id: 'F2S-ORD-849202',
-    customerId: 'cust-102',
-    customerName: 'Aditya Deshmukh',
-    customerPhone: '+91 97654 32109',
-    deliveryAddress: 'Row House 12, Parkside Residential Enclave',
-    items: [
-      {
-        produceId: 'prod-6',
-        name: 'Bell Peppers',
-        price: 80,
-        quantity: 1,
-        unit: 'kg',
-        farmer: 'Green Valley Farm',
-      },
-      {
-        produceId: 'prod-3',
-        name: 'Green Beans',
-        price: 60,
-        quantity: 1,
-        unit: 'kg',
-        farmer: 'Green Valley Farm',
-      },
-    ],
-    subtotal: 140,
-    deliveryFee: 30,
-    totalAmount: 170,
-    status: 'Ready for Pickup',
-    paymentMethod: 'Razorpay Card',
-    paymentId: 'pay_K992xJ290',
-    razorpayOrderId: 'order_K992e881',
-    paymentStatus: 'paid',
-    farmerName: 'Green Valley Farm (Ramesh Patel)',
-    farmPickupLocation: 'Sector 4, Certified Organic Agro-Belt',
-    assignedDeliveryPartner: {
-      id: 'drv-004',
-      name: 'Vikas Shinde',
-      phone: '+91 98230 44812',
-      vehicle: 'Electric Cargo EV (EV-CARGO-4892)',
-    },
-    batchId: 'F2S-BP-20260920-05',
-    distanceKm: 21.0,
-    estimatedDeliveryMinutes: 45,
-    createdAt: 'Today, 08:00 AM',
-    updatedAt: 'Today, 08:45 AM',
-    timeline: [
-      { status: 'Order Placed', timestamp: '08:00 AM', note: 'Customer completed order on portal.' },
-      { status: 'Order Confirmed', timestamp: '08:01 AM', note: 'Razorpay Card payment verified.' },
-      { status: 'Preparing', timestamp: '08:15 AM', note: 'Farmer packaged and sealed batch.' },
-      { status: 'Ready for Pickup', timestamp: '08:45 AM', note: 'Crate sealed with QR label ready at farm.' },
-    ],
-  },
-];
+const INITIAL_ORDERS: Order[] = [];
 
 const INITIAL_REVIEWS: CustomerReview[] = [
   {
@@ -379,7 +271,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>(INITIAL_SUBSCRIPTIONS);
   const [batches, setBatches] = useState<Record<string, TraceabilityBatch>>(TRACEABILITY_MOCK);
   const [selectedBatchId, setSelectedBatchId] = useState<string>('F2S-TM-20260920-01');
-  const [activeTrackOrderId, setActiveTrackOrderId] = useState<string | null>('F2S-ORD-849201');
+  const [activeTrackOrderId, setActiveTrackOrderId] = useState<string | null>(null);
   const [farmerProfile, setFarmerProfile] = useState<FarmerProfile>(INITIAL_FARMER_PROFILE);
   const [deliveryPartnerProfile, setDeliveryPartnerProfile] = useState<DeliveryPartnerProfile>(INITIAL_DELIVERY_PROFILE);
   const [settlements, setSettlements] = useState<Settlement[]>(INITIAL_SETTLEMENTS);
@@ -748,12 +640,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       paymentStatus: 'paid',
       farmerName,
       farmPickupLocation,
-      assignedDeliveryPartner: {
-        id: 'drv-004',
-        name: 'Vikas Shinde',
-        phone: '+91 98230 44812',
-        vehicle: 'Electric Cargo Scooter (MH 12 ET 4892)',
-      },
+      assignedDeliveryPartner: undefined,
       batchId,
       distanceKm: 16.5,
       estimatedDeliveryMinutes: 40,
@@ -795,8 +682,8 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       'Order Confirmed': 'Payment confirmed.',
       'Preparing': 'Farmer has started harvesting & sorting.',
       'Ready for Pickup': 'Packed in sealed crate at farm gate.',
-      'Delivery Partner Assigned': 'Driver allocated to pickup run.',
-      'Picked Up': 'Driver collected crate from farm gate.',
+      'Delivery Partner Assigned': 'Delivery partner allocated to pickup run.',
+      'Picked Up': 'Crate collected from farm gate.',
       'Out for Delivery': 'En route to customer delivery location.',
       'Delivered': 'Delivered to customer doorstep successfully.',
     };
@@ -804,6 +691,22 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setOrders((prev) =>
       prev.map((order) => {
         if (order.id !== orderId) return order;
+
+        let partner = order.assignedDeliveryPartner;
+        if (
+          !partner &&
+          (nextStatus === 'Delivery Partner Assigned' ||
+            nextStatus === 'Picked Up' ||
+            nextStatus === 'Out for Delivery' ||
+            nextStatus === 'Delivered')
+        ) {
+          partner = {
+            id: deliveryPartnerProfile.id,
+            name: deliveryPartnerProfile.name,
+            phone: deliveryPartnerProfile.phone || '+91 98000 12345',
+            vehicle: `${deliveryPartnerProfile.vehicleType} (${deliveryPartnerProfile.vehicleNumber})`,
+          };
+        }
 
         const updatedTimeline = [
           ...order.timeline,
@@ -817,6 +720,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const updated = {
           ...order,
           status: nextStatus,
+          assignedDeliveryPartner: partner,
           updatedAt: `Today, ${timeStr}`,
           timeline: updatedTimeline,
         };

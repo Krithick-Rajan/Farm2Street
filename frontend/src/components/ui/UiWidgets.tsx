@@ -425,16 +425,13 @@ export function FarmHero({
     }
 
     const onScroll = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const h = window.innerHeight;
-      if (rect.bottom > 0 && rect.top < h) {
-        const p = clamp(-rect.top / (rect.height * 0.75), 0, 1);
-        targetProgress = p;
-        wakeUpLoop();
-        if (p >= 0.95 && onScrubComplete) {
-          onScrubComplete();
-        }
+      const scrollY = window.scrollY;
+      const h = window.innerHeight || 800;
+      const p = clamp(scrollY / (h * 0.85), 0, 1);
+      targetProgress = p;
+      wakeUpLoop();
+      if (p >= 0.95 && onScrubComplete) {
+        onScrubComplete();
       }
     };
 

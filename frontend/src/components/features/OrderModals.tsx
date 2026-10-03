@@ -600,7 +600,46 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
   onAdvanceStatus,
   onInspectBatch,
 }) => {
-  if (!isOpen || !order) return null;
+  if (!isOpen) return null;
+
+  if (!order) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
+        <div className="relative z-50 flex w-full max-w-md flex-col overflow-hidden rounded-3xl bg-[#fbfaf5] shadow-2xl border border-[rgba(24,32,25,0.1)] p-6 sm:p-8 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-[#183c2a] mb-4">
+            <Package className="h-8 w-8" />
+          </div>
+          <h3 className="font-sans text-xl font-bold text-[#182019] mb-2">
+            No Active Orders
+          </h3>
+          <p className="text-xs text-stone-500 mb-6 leading-relaxed">
+            You don't have any orders in transit right now. Choose fresh morning-picked produce from our local partner farms and checkout to track your delivery in real-time.
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-xl border border-stone-200 bg-white py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-all cursor-pointer"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                const elem = document.getElementById('fresh-harvests') || document.getElementById('marketplace');
+                if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex-1 rounded-xl bg-[#183c2a] py-2.5 text-xs font-bold text-white hover:bg-[#2c5b3d] transition-all cursor-pointer"
+            >
+              Explore Fresh Harvests
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const currentStageIndex = STAGES.findIndex((s) => s.status === order.status);
 
@@ -728,10 +767,16 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
                   </div>
                 </div>
               </div>
-              {order.assignedDeliveryPartner && (
+              {order.assignedDeliveryPartner ? (
                 <div className="hidden sm:flex items-center gap-2 text-right">
                   <div className="text-[11px] text-stone-600">
                     Courier: <strong className="text-stone-800">{order.assignedDeliveryPartner.name}</strong>
+                  </div>
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center gap-2 text-right">
+                  <div className="text-[11px] text-stone-500 italic">
+                    Courier: <span className="text-stone-700">Allocating Partner</span>
                   </div>
                 </div>
               )}

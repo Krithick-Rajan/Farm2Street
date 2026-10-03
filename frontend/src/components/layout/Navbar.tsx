@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ShoppingBag,
   Package,
@@ -14,10 +14,8 @@ import {
   Layers,
   QrCode,
   Sparkles,
-  Database,
   ArrowRight,
   ChevronRight,
-  FileText,
   Heart,
 } from 'lucide-react';
 import { CurrentUser, UserRole } from '../../types';
@@ -120,6 +118,46 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeOrdersCount = 0,
   onLogout,
 }) => {
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<'marketplace' | 'farms' | 'discovery-3d' | 'traceability' | 'reviews'>('marketplace');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 15);
+
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight > 0) {
+        setScrollProgress(Math.min(100, Math.max(0, (scrollY / docHeight) * 100)));
+      }
+
+      // ScrollSpy section detection
+      const sections: Array<{ id: 'reviews' | 'traceability' | 'discovery-3d' | 'farms'; offset: number }> = [
+        { id: 'reviews', offset: 280 },
+        { id: 'traceability', offset: 280 },
+        { id: 'discovery-3d', offset: 280 },
+        { id: 'farms', offset: 280 },
+      ];
+
+      for (const sec of sections) {
+        const el = document.getElementById(sec.id);
+        if (el) {
+          const top = el.getBoundingClientRect().top;
+          if (top <= sec.offset) {
+            setActiveSection(sec.id);
+            return;
+          }
+        }
+      }
+      setActiveSection('marketplace');
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
       case 'farmer':
@@ -134,7 +172,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-stone-200/90 bg-[#fbfaf5]/95 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all">
+    <header
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        isScrolled
+          ? 'border-b border-stone-200/90 bg-[#fbfaf5]/98 backdrop-blur-md shadow-[0_4px_20px_rgba(24,60,42,0.08)]'
+          : 'border-b border-stone-200/60 bg-[#fbfaf5]/90 backdrop-blur-sm'
+      }`}
+    >
       <div className="w-full flex h-[68px] sm:h-[72px] items-center justify-between px-3 sm:px-6 lg:px-10 gap-2 sm:gap-4">
         {/* Left End: Menu Toggle & Brand Logo */}
         <div className="flex items-center shrink-0">
@@ -161,45 +205,70 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </div>
 
-        {/* Desktop Navigation Links */}
+        {/* Desktop Navigation Links with ScrollSpy highlight */}
         <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-[13px] font-semibold text-[#2c3d31] whitespace-nowrap">
           <button
             type="button"
             onClick={onNavigateHome}
-            className="transition-colors hover:text-[#183c2a] whitespace-nowrap py-1"
+            className={`relative py-1 transition-colors hover:text-[#183c2a] ${
+              activeSection === 'marketplace' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
+            }`}
           >
-            Fresh Produce
+            <span>Fresh Produce</span>
+            {activeSection === 'marketplace' && (
+              <span className="absolute bottom-[-16px] left-0 right-0 h-[2.5px] bg-[#183c2a] rounded-full shadow-xs" />
+            )}
           </button>
           <a
             href="#farms"
-            className="transition-colors hover:text-[#183c2a] whitespace-nowrap py-1"
+            className={`relative py-1 transition-colors hover:text-[#183c2a] ${
+              activeSection === 'farms' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
+            }`}
           >
-            Partner Farms
+            <span>Partner Farms</span>
+            {activeSection === 'farms' && (
+              <span className="absolute bottom-[-16px] left-0 right-0 h-[2.5px] bg-[#183c2a] rounded-full shadow-xs" />
+            )}
           </a>
           <button
             type="button"
             onClick={onOpenSubscriptions}
-            className="transition-colors hover:text-[#183c2a] text-[#183c2a] whitespace-nowrap py-1 font-bold"
+            className="relative py-1 transition-colors text-[#2c3d31] hover:text-[#183c2a] font-semibold"
           >
-            Subscription Plans
+            <span>Subscription Plans</span>
           </button>
           <a
             href="#discovery-3d"
-            className="transition-colors hover:text-[#183c2a] whitespace-nowrap py-1"
+            className={`relative py-1 transition-colors hover:text-[#183c2a] ${
+              activeSection === 'discovery-3d' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
+            }`}
           >
-            3D Discovery
+            <span>3D Discovery</span>
+            {activeSection === 'discovery-3d' && (
+              <span className="absolute bottom-[-16px] left-0 right-0 h-[2.5px] bg-[#183c2a] rounded-full shadow-xs" />
+            )}
           </a>
           <a
             href="#traceability"
-            className="transition-colors hover:text-[#183c2a] whitespace-nowrap py-1"
+            className={`relative py-1 transition-colors hover:text-[#183c2a] ${
+              activeSection === 'traceability' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
+            }`}
           >
-            QR Traceability
+            <span>QR Traceability</span>
+            {activeSection === 'traceability' && (
+              <span className="absolute bottom-[-16px] left-0 right-0 h-[2.5px] bg-[#183c2a] rounded-full shadow-xs" />
+            )}
           </a>
           <a
             href="#reviews"
-            className="transition-colors hover:text-[#183c2a] whitespace-nowrap py-1"
+            className={`relative py-1 transition-colors hover:text-[#183c2a] ${
+              activeSection === 'reviews' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
+            }`}
           >
-            Customer Reviews
+            <span>Customer Reviews</span>
+            {activeSection === 'reviews' && (
+              <span className="absolute bottom-[-16px] left-0 right-0 h-[2.5px] bg-[#183c2a] rounded-full shadow-xs" />
+            )}
           </a>
         </nav>
 
@@ -279,6 +348,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
         </div>
+      </div>
+
+      {/* Dynamic Scroll Journey Progress Bar — moves as user scrolls down */}
+      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-stone-200/50 overflow-hidden pointer-events-none">
+        <div
+          className="h-full bg-gradient-to-r from-[#183c2a] via-[#c5a880] to-[#2c5b3d] transition-all duration-100 ease-out shadow-[0_0_8px_rgba(197,168,128,0.7)]"
+          style={{ width: `${scrollProgress}%` }}
+        />
       </div>
     </header>
   );
@@ -541,61 +618,7 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
             </nav>
           </div>
 
-          <div className="pt-2 border-t border-white/10">
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c5a880] px-3 mb-2 flex items-center justify-between">
-              <span>Jakarta EE &bull; JSP &bull; XML</span>
-              <span className="text-[8px] bg-[#c5a880]/20 text-[#c5a880] px-1.5 py-0.5 rounded">Tomcat</span>
-            </div>
-            <div className="space-y-1">
-              <a
-                href="orders.jsp"
-                className="w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <FileText className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>JSP Live Orders Log</span>
-                </div>
-                <span className="text-[9px] font-mono text-stone-500">orders.jsp</span>
-              </a>
 
-              <a
-                href="catalog.jsp"
-                className="w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Sprout className="h-3.5 w-3.5 text-[#c5a880]" />
-                  <span>JSP Produce Catalog</span>
-                </div>
-                <span className="text-[9px] font-mono text-stone-500">catalog.jsp</span>
-              </a>
-
-              <a
-                href="produce.xml"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Layers className="h-3.5 w-3.5 text-amber-400" />
-                  <span>XML Traceability Feed</span>
-                </div>
-                <span className="text-[9px] font-mono text-stone-500">produce.xml</span>
-              </a>
-
-              <a
-                href="api/produce"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full flex items-center justify-between p-2.5 rounded-xl text-xs text-stone-300 hover:text-white hover:bg-white/5 transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Database className="h-3.5 w-3.5 text-sky-400" />
-                  <span>Jakarta Produce Servlet</span>
-                </div>
-                <span className="text-[9px] font-mono text-stone-500">/api/produce</span>
-              </a>
-            </div>
-          </div>
 
           <div className="pt-2 border-t border-white/10">
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c5a880] px-3 mb-2">
@@ -721,16 +744,18 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
           )}
         </div>
 
-        <div className="p-3.5 border-t border-white/10 bg-black/40 text-[11px] text-stone-400 space-y-1.5">
-          <div className="flex items-center justify-between font-mono text-[10px]">
-            <div className="flex items-center gap-1.5 text-emerald-400">
-              <Database className="h-3 w-3" />
-              <span>Supabase PostgreSQL 16</span>
-            </div>
-            <span className="text-emerald-400 font-bold">Online</span>
+        <div className="p-4 border-t border-white/10 bg-black/40 text-[11px] text-stone-300 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-[#c5a880] uppercase tracking-wider">
+              Need Assistance?
+            </span>
+            <span className="text-[10px] font-mono text-emerald-400 font-semibold">24/7 Helpline</span>
           </div>
-          <div className="text-[10px] text-stone-500">
-            OpenStreetMap & Satellite Ortho Transit • Zero Google APIs
+          <div className="text-xs font-bold text-white tracking-wide">
+            1800-FARM-2-STREET
+          </div>
+          <div className="text-[10px] text-stone-400">
+            Direct harvest delivery &bull; 100% Tested residue-free
           </div>
         </div>
       </aside>
