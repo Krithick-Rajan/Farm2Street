@@ -155,101 +155,103 @@ function AppContent() {
       )}
 
       {/* 4. Screen Views Based on Active Portal */}
-      {/* VIEW A: MAIN FRESH PRODUCE MARKETPLACE */}
-      {activeView === 'marketplace' && (
-        <main>
-          {/* Hero Video Scrub */}
-          <FarmHero
-            title="FROM FARM"
-            tagline="TO STREET — Fresh harvests direct from nearby growers."
-            scrollHint="SCROLL TO HARVEST"
-            scrubDistance={2400}
-          />
-
-          {/* Fresh Harvests Produce Section */}
-          <FreshHarvests
-            produceList={produceList}
-            onAddToCart={handleAddToCart}
-            onInspectBatch={handleInspectBatch}
-          />
-
-          {/* 3D Produce Coverflow Carousel */}
-          <section id="discovery-3d" className="relative py-10 bg-[#07100b]">
-            <div className="text-center pt-8 pb-2">
-              <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#c5a880]">
-                Interactive 3D Produce Stage
-              </span>
-              <h2 className="font-sans text-3xl md:text-5xl font-bold tracking-[-0.04em] text-white mt-2">
-                Featured Harvest Discovery
-              </h2>
-              <p className="text-xs md:text-sm text-stone-400 mt-2 max-w-lg mx-auto px-4">
-                Explore morning-picked produce in 3D perspective. Sweep left or right on your mousepad, drag, click, or use arrow keys.
-              </p>
-            </div>
-            <CoverFlowCarousel
-              items={defaultDishes}
-              sectionLabel="DIRECT ORCHARD & FIELD PICKS"
-              autoplay={true}
-              autoplayDelay={4000}
-              onCtaClick={(dish) => {
-                const matched =
-                  produceList.find((p) =>
-                    p.name.toLowerCase().includes(dish.titleLine1.toLowerCase().split(' ')[0])
-                  ) || produceList[0];
-                handleAddToCart(matched);
-              }}
+      <div className={activeView !== 'login' && activeView !== 'register' ? 'pt-[68px] sm:pt-[72px]' : ''}>
+        {/* VIEW A: MAIN FRESH PRODUCE MARKETPLACE */}
+        {activeView === 'marketplace' && (
+          <main>
+            {/* Hero Video Scrub */}
+            <FarmHero
+              title="FROM FARM"
+              tagline="TO STREET — Fresh harvests direct from nearby growers."
+              scrollHint="SCROLL TO HARVEST"
+              scrubDistance={2400}
             />
-          </section>
 
-          {/* Produce Traceability Engine */}
-          <TraceabilitySection activeBatchId={selectedBatchId} />
+            {/* Fresh Harvests Produce Section */}
+            <FreshHarvests
+              produceList={produceList}
+              onAddToCart={handleAddToCart}
+              onInspectBatch={handleInspectBatch}
+            />
 
-          {/* Partner Micro-Farms Showcase */}
-          <LocalFarms />
+            {/* 3D Produce Coverflow Carousel */}
+            <section id="discovery-3d" className="relative py-10 bg-[#07100b]">
+              <div className="text-center pt-8 pb-2">
+                <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#c5a880]">
+                  Interactive 3D Produce Stage
+                </span>
+                <h2 className="font-sans text-3xl md:text-5xl font-bold tracking-[-0.04em] text-white mt-2">
+                  Featured Harvest Discovery
+                </h2>
+                <p className="text-xs md:text-sm text-stone-400 mt-2 max-w-lg mx-auto px-4">
+                  Explore morning-picked produce in 3D perspective. Sweep left or right on your mousepad, drag, click, or use arrow keys.
+                </p>
+              </div>
+              <CoverFlowCarousel
+                items={defaultDishes}
+                sectionLabel="DIRECT ORCHARD & FIELD PICKS"
+                autoplay={true}
+                autoplayDelay={4000}
+                onCtaClick={(dish) => {
+                  const matched =
+                    produceList.find((p) =>
+                      p.name.toLowerCase().includes(dish.titleLine1.toLowerCase().split(' ')[0])
+                    ) || produceList[0];
+                  handleAddToCart(matched);
+                }}
+              />
+            </section>
 
-          {/* Dynamic Customer Reviews */}
-          <CustomerReviews />
+            {/* Produce Traceability Engine */}
+            <TraceabilitySection activeBatchId={selectedBatchId} />
 
-          {/* Editorial Footer */}
-          <Footer />
-        </main>
-      )}
+            {/* Partner Micro-Farms Showcase */}
+            <LocalFarms />
 
-      {/* VIEW B: DEDICATED SEPARATE SUBSCRIPTION PLANS PAGE */}
-      {activeView === 'subscriptions' && (
-        <>
-          <SubscriptionPlansPage
+            {/* Dynamic Customer Reviews */}
+            <CustomerReviews />
+
+            {/* Editorial Footer */}
+            <Footer />
+          </main>
+        )}
+
+        {/* VIEW B: DEDICATED SEPARATE SUBSCRIPTION PLANS PAGE */}
+        {activeView === 'subscriptions' && (
+          <>
+            <SubscriptionPlansPage
+              onBackToMarketplace={() => setActiveView('marketplace')}
+              onSubscribe={handleSubscribeBox}
+            />
+            <Footer />
+          </>
+        )}
+
+        {/* VIEW C: FULL-SCREEN SPLIT-LAYOUT LOGIN EXPERIENCE */}
+        {activeView === 'login' && (
+          <LoginPage
             onBackToMarketplace={() => setActiveView('marketplace')}
-            onSubscribe={handleSubscribeBox}
+            onNavigateRegister={() => setActiveView('register')}
           />
-          <Footer />
-        </>
-      )}
+        )}
 
-      {/* VIEW C: FULL-SCREEN SPLIT-LAYOUT LOGIN EXPERIENCE */}
-      {activeView === 'login' && (
-        <LoginPage
-          onBackToMarketplace={() => setActiveView('marketplace')}
-          onNavigateRegister={() => setActiveView('register')}
-        />
-      )}
+        {/* VIEW C.2: FULL-SCREEN SPLIT-LAYOUT REGISTRATION EXPERIENCE */}
+        {activeView === 'register' && (
+          <RegisterPage
+            onBackToMarketplace={() => setActiveView('marketplace')}
+            onNavigateLogin={() => setActiveView('login')}
+          />
+        )}
 
-      {/* VIEW C.2: FULL-SCREEN SPLIT-LAYOUT REGISTRATION EXPERIENCE */}
-      {activeView === 'register' && (
-        <RegisterPage
-          onBackToMarketplace={() => setActiveView('marketplace')}
-          onNavigateLogin={() => setActiveView('login')}
-        />
-      )}
+        {/* VIEW D: FARMER PRODUCER PORTAL (Actor 1) */}
+        {activeView === 'farmer' && <FarmerPortal />}
 
-      {/* VIEW D: FARMER PRODUCER PORTAL (Actor 1) */}
-      {activeView === 'farmer' && <FarmerPortal />}
+        {/* VIEW E: DELIVERY PARTNER OPERATOR PORTAL (Actor 3) */}
+        {activeView === 'delivery' && <DeliveryPortal />}
 
-      {/* VIEW E: DELIVERY PARTNER OPERATOR PORTAL (Actor 3) */}
-      {activeView === 'delivery' && <DeliveryPortal />}
-
-      {/* VIEW F: ADMIN CONTROL CENTER (Actor 4) */}
-      {activeView === 'admin' && <AdminCenter />}
+        {/* VIEW F: ADMIN CONTROL CENTER (Actor 4) */}
+        {activeView === 'admin' && <AdminCenter />}
+      </div>
 
       {/* MODALS */}
 
