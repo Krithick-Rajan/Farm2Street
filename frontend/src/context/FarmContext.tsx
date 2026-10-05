@@ -441,7 +441,14 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const user = authRes.user;
-    const targetRole = role || user.role || 'customer';
+    // Privilege escalation prevention: Enforce actual database role, block tab override
+    const targetRole = (user.role as UserRole) || 'customer';
+    if (role && user.role && user.role.toLowerCase() !== role.toLowerCase()) {
+      return {
+        success: false,
+        error: `Permission denied: This account is registered as '${user.role}', not '${role}'. Please use the ${user.role.toUpperCase()} login tab.`,
+      };
+    }
 
     const newUser: CurrentUser = {
       id: String(user.id),
@@ -570,7 +577,19 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       if (supabase) {
-        await supabase.from('produce').insert(newProduce);
+        await supabase.from('produce').insert({
+          name: item.name,
+          category: item.category,
+          price: item.price,
+          unit: item.unit,
+          stock: item.availableQty,
+          farm_name: item.farmer,
+          farm_location: item.farmLocation,
+          harvest_date: item.harvestDate || new Date().toISOString().split('T')[0],
+          batch_id: item.batchId || `BATCH-${Date.now().toString().slice(-6)}`,
+          image_url: item.image,
+          organic: item.organic ?? false,
+        });
       }
     } catch (e) {
       console.warn('Supabase produce sync fallback:', e);
@@ -584,7 +603,10 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       if (supabase) {
-        await supabase.from('produce').update({ availableQty: Math.max(0, newQty) });
+        const query = isNaN(Number(id))
+          ? supabase.from('produce').update({ stock: Math.max(0, newQty) }).eq('batch_id', id)
+          : supabase.from('produce').update({ stock: Math.max(0, newQty) }).eq('id', Number(id));
+        await query;
       }
     } catch (e) {
       console.warn('Supabase stock sync fallback:', e);
@@ -655,14 +677,24 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setOrders((prev) => [newOrder, ...prev]);
     setActiveTrackOrderId(newOrder.id);
 
-    // Sync to Supabase PostgreSQL 16
+    // Sync to Supabase PostgreSQL 16 (map camelCase -> snake_case schema columns)
     try {
       if (supabase) {
+        const dbOrder = {
+          order_code:       newOrder.id,
+          customer_name:    newOrder.customerName,
+          customer_phone:   newOrder.customerPhone,
+          delivery_address: newOrder.deliveryAddress,
+          total_amount:     newOrder.totalAmount,
+          payment_status:   newOrder.paymentStatus === 'paid' ? 'Paid' : 'Pending',
+          payment_id:       newOrder.paymentId,
+          order_status:     'Order Placed',
+        };
         supabase
           .from('orders')
-          .insert(newOrder)
+          .insert(dbOrder)
           .then(({ error }) => {
-            if (error) console.warn('Supabase order write caught:', error);
+            if (error) console.warn('Supabase order write notice:', error.message);
           });
       }
     } catch (e) {
@@ -731,13 +763,11 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
             supabase
               .from('orders')
               .update({
-                status: nextStatus,
-                updatedAt: updated.updatedAt,
-                timeline: updatedTimeline,
+                order_status: nextStatus,
               })
-              .eq('id', orderId)
+              .eq('order_code', orderId)
               .then(({ error }) => {
-                if (error) console.warn('Supabase order update caught:', error);
+                if (error) console.warn('Supabase order update notice:', error.message);
               });
           }
         } catch (e) {

@@ -72,11 +72,11 @@ public class OrderDAO {
             conn.commit(); // Commit transaction
             return true;
         } catch (Exception e) {
-            System.err.println("Order transaction notice: " + e.getMessage());
+            System.err.println("Order transaction error: " + e.getMessage());
             if (conn != null) {
                 try { conn.rollback(); } catch (SQLException ignored) {}
             }
-            return true; // Mark as recorded for user in case DB is being provisioned
+            return false; // Transaction failed - order was not recorded
         } finally {
             DBConnection.close(rs, stmtOrder, stmtItem, conn);
         }

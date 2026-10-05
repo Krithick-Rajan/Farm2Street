@@ -107,6 +107,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       return;
     }
 
+    // Platform Governance: Enforce security authorization key for admin accounts
+    if (selectedRole === 'admin') {
+      const validAdminKeys = ['FARM2STREET_ADMIN_2026', 'ADMIN_F2S_SECURE'];
+      if (!securityKey.trim() || !validAdminKeys.includes(securityKey.trim())) {
+        setErrorMessage('Invalid platform authorization key. Administrator accounts require a valid security key (e.g., FARM2STREET_ADMIN_2026).');
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     const payload: any = {
@@ -191,7 +200,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
            LEFT — FARM VISUAL & CANVAS EXPERIENCE
       ====================================================== */}
       <section
-        className="relative min-h-[460px] lg:min-h-screen overflow-hidden isolate"
+        className="relative min-h-[320px] sm:min-h-[420px] lg:min-h-screen overflow-hidden isolate"
         style={{
           background: 'linear-gradient(180deg, #173f29 0%, #204f31 38%, #315f38 58%, #405f3d 72%, #705238 100%)',
         }}

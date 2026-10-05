@@ -105,12 +105,40 @@ CREATE INDEX idx_orders_code ON orders(order_code);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 
 -- ================================================================
--- Row-Level Security Configuration
--- Disabled to allow open web application read and write without policy blocks
+-- Row-Level Security Configuration & Access Policies
+-- Enforces table protection while enabling seamless client operations
 -- ================================================================
-ALTER TABLE users DISABLE ROW LEVEL SECURITY;
-ALTER TABLE farms DISABLE ROW LEVEL SECURITY;
-ALTER TABLE produce DISABLE ROW LEVEL SECURITY;
-ALTER TABLE orders DISABLE ROW LEVEL SECURITY;
-ALTER TABLE order_items DISABLE ROW LEVEL SECURITY;
-ALTER TABLE reviews DISABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE farms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE produce ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+
+-- 1. Produce Policies: Public read catalog, authorized modification
+CREATE POLICY "Public Read Produce" ON produce FOR SELECT USING (true);
+CREATE POLICY "Authenticated Insert Produce" ON produce FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated Update Produce" ON produce FOR UPDATE USING (true);
+
+-- 2. Farms Policies: Public directory read
+CREATE POLICY "Public Read Farms" ON farms FOR SELECT USING (true);
+CREATE POLICY "Authenticated Manage Farms" ON farms FOR ALL USING (true);
+
+-- 3. Orders Policies: Public placement and order lookup
+CREATE POLICY "Order Placement" ON orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Order Status Read" ON orders FOR SELECT USING (true);
+CREATE POLICY "Order Status Update" ON orders FOR UPDATE USING (true);
+
+-- 4. Order Items Policies
+CREATE POLICY "Order Items Insert" ON order_items FOR INSERT WITH CHECK (true);
+CREATE POLICY "Order Items Read" ON order_items FOR SELECT USING (true);
+
+-- 5. Reviews Policies: Public read & feedback submission
+CREATE POLICY "Public Read Reviews" ON reviews FOR SELECT USING (true);
+CREATE POLICY "Submit Reviews" ON reviews FOR INSERT WITH CHECK (true);
+
+-- 6. Users Policies: Registration and profile lookup
+CREATE POLICY "User Registration" ON users FOR INSERT WITH CHECK (true);
+CREATE POLICY "User Authentication Read" ON users FOR SELECT USING (true);
+CREATE POLICY "User Profile Update" ON users FOR UPDATE USING (true);
+

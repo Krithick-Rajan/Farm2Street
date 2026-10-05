@@ -99,7 +99,15 @@ public class AuthServlet extends HttpServlet {
             String address = req.getParameter("address");
 
             boolean registered = userDAO.register(name, email, password, role, phone, address);
-            resp.getWriter().print("{\"success\": " + registered + ", \"message\": \"User registered successfully\"}");
+            resp.getWriter().print("{\"success\": " + registered + ", \"message\": \"" + (registered ? "User registered successfully" : "Registration failed. Email may already be registered.") + "\"}");
         }
+    }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        resp.setStatus(HttpServletResponse.SC_OK);
     }
 }

@@ -65,8 +65,8 @@ public class UserDAO {
             stmt.setString(6, address);
             return stmt.executeUpdate() > 0;
         } catch (Exception e) {
-            System.err.println("User registration notice: " + e.getMessage());
-            return true;
+            System.err.println("User registration error: " + e.getMessage());
+            return false;
         } finally {
             DBConnection.close(stmt, conn);
         }

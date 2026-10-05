@@ -63,13 +63,13 @@ export const FreshHarvests: React.FC<FreshHarvestsProps> = ({
       </div>
 
       {/* 4-column Produce Grid matching farm2street-full-premium-motion */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[18px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-[18px]">
         {filtered.map((item) => {
           const isAdded = addedIds[item.id];
           return (
             <article key={item.id} className="group flex flex-col">
               {/* Image Container with Floating Button */}
-              <div className="relative h-[320px] w-full overflow-hidden rounded-[18px] bg-[#e4e4db]">
+              <div className="relative h-[260px] sm:h-[320px] w-full overflow-hidden rounded-[18px] bg-[#e4e4db]">
                 <img
                   src={item.image}
                   alt={item.name}
@@ -81,13 +81,14 @@ export const FreshHarvests: React.FC<FreshHarvestsProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onInspectBatch(item.batchId);
+                    const batchKey = item.batchId || (item as any).batch_id || 'F2S-TM-20260920-01';
+                    onInspectBatch(batchKey);
                   }}
                   title="Click to view batch traceability timeline"
                   className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-black/50 backdrop-blur-md px-2.5 py-1 text-[10px] font-medium text-white/90 transition-colors hover:bg-[#183c2a]"
                 >
                   <QrCode className="h-3 w-3 text-[#c5a880]" />
-                  <span>#{item.batchId.slice(-6)}</span>
+                  <span>#{(item.batchId || (item as any).batch_id || 'BATCH').slice(-6)}</span>
                 </button>
 
                 {/* Floating Add to Cart Button (Bottom Right) */}

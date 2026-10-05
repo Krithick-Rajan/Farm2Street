@@ -34,6 +34,7 @@ export const FarmerPortal: React.FC = () => {
     setSelectedBatchId,
     settlements,
     logout,
+    currentUser,
   } = useFarm();
 
   const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'batches' | 'earnings' | 'profile'>('orders');
@@ -55,10 +56,18 @@ export const FarmerPortal: React.FC = () => {
   const [batchGrade, setBatchGrade] = useState('Grade A+ (Export Quality)');
   const [batchSoilCarbon, setBatchSoilCarbon] = useState('0.84% Optimal');
 
-  // Filter orders relevant to this farmer
-  const farmerOrders = orders.filter(
-    (o) => o.farmerName.toLowerCase().includes('green valley') || o.farmerName.toLowerCase().includes('ramesh')
-  );
+  // Filter orders dynamically matching this farmer's profile or farm name
+  const farmerOrders = orders.filter((o) => {
+    const fName = (farmerProfile?.name || currentUser?.name || '').toLowerCase();
+    const farm = (farmerProfile?.farmName || '').toLowerCase();
+    const orderFarmer = (o.farmerName || '').toLowerCase();
+    return (
+      (farm && orderFarmer.includes(farm)) ||
+      (fName && orderFarmer.includes(fName.split(' ')[0])) ||
+      orderFarmer.includes('green valley') ||
+      orderFarmer.includes('ramesh')
+    );
+  });
   const pendingPrepOrders = farmerOrders.filter(
     (o) => o.status === 'Order Confirmed' || o.status === 'Preparing'
   );
@@ -174,7 +183,7 @@ export const FarmerPortal: React.FC = () => {
         </div>
 
         {/* Quick KPI Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
               Orders Awaiting Prep

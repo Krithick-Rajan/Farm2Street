@@ -65,4 +65,12 @@ public class ProduceServlet extends HttpServlet {
             resp.getWriter().print("{\"success\": false, \"error\": \"" + e.getMessage() + "\"}");
         }
     }
+
+    @Override
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        resp.setStatus(HttpServletResponse.SC_OK);
+    }
 }

@@ -107,7 +107,7 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      <div className="relative z-50 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl border border-stone-200">
+      <div className="relative z-50 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl border border-stone-200">
         <div className="bg-[#183c2a] px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 font-black text-white text-xs shadow-sm">
@@ -686,7 +686,7 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
                   Delivery Progress
@@ -699,7 +699,7 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => onAdvanceStatus(order.id, nextStatus)}
-                  className="flex items-center gap-1.5 rounded-full bg-[#183c2a] px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-[#2c5b3d] shadow-sm transition-all"
+                  className="flex items-center gap-1.5 self-start sm:self-auto rounded-full bg-[#183c2a] px-3.5 py-1.5 text-[11px] font-bold text-white hover:bg-[#2c5b3d] shadow-sm transition-all"
                 >
                   <Sparkles className="h-3 w-3 text-amber-300" />
                   <span>Advance Status to "{nextStatus}"</span>

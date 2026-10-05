@@ -110,7 +110,7 @@ export const AdminCenter: React.FC = () => {
         </div>
 
         {/* Global KPIs Bar */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
               Registered Micro-Farms

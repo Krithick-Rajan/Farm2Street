@@ -12,7 +12,8 @@ const DEFAULT_URL =
   import.meta.env.VITE_SUPABASE_URL || 'https://aydjkpolejhsmpsrmgfo.supabase.co';
 const DEFAULT_KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5ZGprcG9sZWpoc21wc3JtZ2ZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDk1MzYwOSwiZXhwIjoyMTA2NTI5NjA5fQ.aNbIyjfmwsdLh9cwpbVioKmmK_euyt4WW_CVfko0ZXc';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5ZGprcG9sZWpoc21wc3JtZ2ZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5NTM2MDksImV4cCI6MjEwNjUyOTYwOX0.eKqqXMKn1jhSli1y_XYNvaU5tK_qcV2ada-iOPPeuYg';
+
 
 export const SUPABASE_CONFIG: SupabaseConfig = {
   supabaseUrl: DEFAULT_URL,
@@ -108,10 +109,10 @@ export const supabaseProduceService = {
 
   async updateStock(id: string, newStock: number): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('produce')
-        .update({ availableQty: newStock })
-        .eq('id', id);
+      const query = isNaN(Number(id))
+        ? supabase.from('produce').update({ stock: newStock }).eq('batch_id', id)
+        : supabase.from('produce').update({ stock: newStock }).eq('id', Number(id));
+      const { error } = await query;
       return !error;
     } catch {
       return false;
@@ -126,7 +127,7 @@ export const supabaseOrderService = {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('created_at', { ascending: false });
       if (error || !data) return null;
       return data as Order[];
     } catch (e) {
@@ -137,7 +138,17 @@ export const supabaseOrderService = {
 
   async insert(order: Order): Promise<boolean> {
     try {
-      const { error } = await supabase.from('orders').insert(order);
+      const dbOrder = {
+        order_code:       order.id,
+        customer_name:    order.customerName,
+        customer_phone:   order.customerPhone,
+        delivery_address: order.deliveryAddress,
+        total_amount:     order.totalAmount,
+        payment_status:   order.paymentStatus === 'paid' ? 'Paid' : 'Pending',
+        payment_id:       order.paymentId,
+        order_status:     order.status || 'Order Placed',
+      };
+      const { error } = await supabase.from('orders').insert(dbOrder);
       return !error;
     } catch {
       return false;
@@ -148,8 +159,8 @@ export const supabaseOrderService = {
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ status, updatedAt: 'Just now' })
-        .eq('id', orderId);
+        .update({ order_status: status })
+        .eq('order_code', orderId);
       return !error;
     } catch {
       return false;

@@ -1,0 +1,49 @@
+# ==============================================================================
+# Render Blueprint Configuration (render.yaml)
+# Direct Farmer-to-Consumer Agri-Tech & Traceability Platform
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Full-Stack Web Service (Apache Tomcat 11 + Servlets + JSP + React)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: farm2street-fullstack
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SUPABASE_DB_URL
+        value: jdbc:postgresql://aws-0-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require
+      - key: SUPABASE_DB_USER
+        value: postgres.aydjkpolejhsmpsrmgfo
+      - key: SUPABASE_DB_PASS
+        value: KRITHICK@007
+      - key: RAZORPAY_SECRET
+        value: test_secret_key
+
+  # ----------------------------------------------------------------------------
+  # 2. High-Performance Static Site (React 19 + Vite Global Edge CDN)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: farm2street-web
+    runtime: static
+    plan: free
+    region: singapore
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_SUPABASE_URL
+        value: https://aydjkpolejhsmpsrmgfo.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5ZGprcG9sZWpoc21wc3JtZ2ZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5NTM2MDksImV4cCI6MjEwNjUyOTYwOX0.eKqqXMKn1jhSli1y_XYNvaU5tK_qcV2ada-iOPPeuYg
+      - key: VITE_RAZORPAY_KEY_ID
+        value: rzp_test_1DP5mmOlF5G5ag
