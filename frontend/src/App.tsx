@@ -180,18 +180,19 @@ function AppContent() {
       )}
 
       {/* 4. Screen Views Based on Active Portal */}
-      <div className={activeView !== 'login' && activeView !== 'register' ? 'pt-[68px] sm:pt-[72px]' : ''}>
-        {/* VIEW A: MAIN FRESH PRODUCE MARKETPLACE */}
-        {activeView === 'marketplace' && (
-          <main>
-            {/* Hero Video Scrub */}
-            <FarmHero
-              title="FROM FARM"
-              tagline="TO STREET — Fresh harvests direct from nearby growers."
-              scrollHint="SCROLL TO HARVEST"
-              scrubDistance={2400}
-            />
+      {/* FarmHero lives OUTSIDE the padded wrapper so the sticky hero anchors cleanly at top-0 */}
+      {activeView === 'marketplace' && (
+        <main>
+          {/* Hero Video Scrub — no top-padding; fills viewport from under the fixed navbar */}
+          <FarmHero
+            title="FROM FARM"
+            tagline="TO STREET — Fresh harvests direct from nearby growers."
+            scrollHint="SCROLL TO HARVEST"
+            scrubDistance={2400}
+          />
 
+          {/* Rest of marketplace content with navbar offset */}
+          <div>
             {/* Fresh Harvests Produce Section */}
             <FreshHarvests
               produceList={produceList}
@@ -236,11 +237,14 @@ function AppContent() {
             {/* Dynamic Customer Reviews */}
             <CustomerReviews />
 
-            {/* Editorial Footer */}
+          {/* Editorial Footer */}
             <Footer />
-          </main>
-        )}
+          </div>
+        </main>
+      )}
 
+      {/* Non-marketplace views with navbar offset padding */}
+      <div className={activeView !== 'login' && activeView !== 'register' && activeView !== 'marketplace' ? 'pt-[68px] sm:pt-[72px]' : ''}>
         {/* VIEW B: DEDICATED SEPARATE SUBSCRIPTION PLANS PAGE */}
         {activeView === 'subscriptions' && (
           <>

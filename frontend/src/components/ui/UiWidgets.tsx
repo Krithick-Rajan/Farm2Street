@@ -457,12 +457,12 @@ export function FarmHero({
   return (
     <div
       ref={trackRef}
-      className="relative w-full h-[220vh] sm:h-[250vh]"
-      style={{ background: COL_BG }}
+      className="relative w-full h-[calc(220vh+68px)] sm:h-[calc(250vh+72px)]"
+      style={{ background: COL_BG, marginTop: 0 }}
     >
       <div
         ref={sectionRef}
-        className={`sticky top-0 h-[100svh] min-h-[580px] w-full overflow-hidden select-none ${className || ''}`}
+        className={`sticky top-[68px] sm:top-[72px] h-[calc(100svh-68px)] sm:h-[calc(100svh-72px)] min-h-[520px] w-full overflow-hidden select-none ${className || ''}`}
         style={{
           background: COL_BG,
           touchAction: 'pan-y',
