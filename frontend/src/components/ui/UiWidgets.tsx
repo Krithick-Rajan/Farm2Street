@@ -334,17 +334,24 @@ export function FarmHero({
   const progressBarRef = useRef<HTMLDivElement>(null);
   const progressTextRef = useRef<HTMLSpanElement>(null);
 
+  const [isHeroLocked, setIsHeroLocked] = useState(false);
   const releaseLockRef = useRef<() => void>(() => {});
 
-  const unlockAndScroll = () => {
-    releaseLockRef.current();
-    const target =
-      document.getElementById('fresh-harvests') || document.getElementById('marketplace');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+  const unlockAndScroll = (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
+    releaseLockRef.current();
+    setTimeout(() => {
+      const target =
+        document.getElementById('fresh-harvests') || document.getElementById('marketplace');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+      }
+    }, 20);
   };
 
   useEffect(() => {
@@ -355,11 +362,15 @@ export function FarmHero({
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const effectiveScrubDistance = isMobile ? Math.min(scrubDistance, 1300) : scrubDistance;
+
     let rafId = 0;
     let targetProgress = 0;
     let currentProgress = 0;
     let hasStartedScrolling = false;
     let locked = false;
+    let hasScrolledPastHero = false;
     let lockedScrollY = 0;
     let touchStartY = 0;
 
@@ -368,7 +379,8 @@ export function FarmHero({
     function engageLock() {
       if (locked || typeof document === 'undefined') return;
       locked = true;
-      lockedScrollY = window.scrollY;
+      setIsHeroLocked(true);
+      lockedScrollY = window.scrollY || 0;
       const b = document.body.style;
       b.position = 'fixed';
       b.top = `-${lockedScrollY}px`;
@@ -377,12 +389,18 @@ export function FarmHero({
       b.width = '100%';
       b.height = '100%';
       b.overscrollBehavior = 'none';
+      if (sectionRef.current) {
+        sectionRef.current.style.touchAction = 'none';
+      }
+      if (imageRef.current) {
+        imageRef.current.style.touchAction = 'none';
+      }
     }
 
     function releaseLock() {
-      if (!locked || typeof document === 'undefined') return;
+      if (!locked && !document.body.style.position) return;
       locked = false;
-      const y = lockedScrollY;
+      setIsHeroLocked(false);
       const b = document.body.style;
       b.position = '';
       b.top = '';
@@ -391,7 +409,12 @@ export function FarmHero({
       b.width = '';
       b.height = '';
       b.overscrollBehavior = '';
-      window.scrollTo(0, y);
+      if (sectionRef.current) {
+        sectionRef.current.style.touchAction = 'pan-y';
+      }
+      if (imageRef.current) {
+        imageRef.current.style.touchAction = 'pan-y';
+      }
     }
 
     releaseLockRef.current = releaseLock;
@@ -477,16 +500,21 @@ export function FarmHero({
     }
 
     function addDelta(deltaY: number) {
-      if (targetProgress >= 0.98 && deltaY > 0) {
+      if (targetProgress >= 0.96 && deltaY > 0) {
+        targetProgress = 1;
+        currentProgress = 1;
+        updateVisuals(1);
         releaseLock();
-        const target =
-          document.getElementById('fresh-harvests') || document.getElementById('marketplace');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
-        }
         if (onScrubComplete) onScrubComplete();
+        setTimeout(() => {
+          const target =
+            document.getElementById('fresh-harvests') || document.getElementById('marketplace');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
+          }
+        }, 20);
         return false;
       }
 
@@ -494,7 +522,7 @@ export function FarmHero({
         return false;
       }
 
-      const next = clamp(targetProgress + deltaY / scrubDistance, 0, 1);
+      const next = clamp(targetProgress + deltaY / effectiveScrubDistance, 0, 1);
       targetProgress = next;
       if (targetProgress > 0.001) hasStartedScrolling = true;
       wakeUpLoop();
@@ -503,8 +531,9 @@ export function FarmHero({
 
     const onWheel = (e: WheelEvent) => {
       if (!locked) {
-        if (window.scrollY <= 5 && e.deltaY < 0) {
+        if (hasScrolledPastHero && window.scrollY <= 2 && e.deltaY < 0) {
           engageLock();
+          hasScrolledPastHero = false;
           targetProgress = 1;
           currentProgress = 1;
           wakeUpLoop();
@@ -525,15 +554,11 @@ export function FarmHero({
       const y = e.touches[0]?.clientY ?? touchStartY;
       const deltaY = touchStartY - y;
       touchStartY = y;
+
       if (!locked) {
-        if (window.scrollY <= 5 && deltaY < 0) {
-          engageLock();
-          targetProgress = 1;
-          currentProgress = 1;
-          wakeUpLoop();
-        }
         return;
       }
+
       const consumed = addDelta(deltaY);
       if (consumed) {
         e.preventDefault();
@@ -547,8 +572,9 @@ export function FarmHero({
     section.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
 
     const onWindowScroll = () => {
-      if (!locked && window.scrollY <= 5) {
-        engageLock();
+      if (typeof window === 'undefined') return;
+      if (window.scrollY > window.innerHeight * 0.5) {
+        hasScrolledPastHero = true;
       }
     };
     window.addEventListener('scroll', onWindowScroll, { passive: true });
@@ -578,7 +604,7 @@ export function FarmHero({
         width: '100%',
         overflow: 'hidden',
         background: COL_BG,
-        touchAction: 'none',
+        touchAction: isHeroLocked ? 'none' : 'pan-y',
         ...style,
       }}
     >
@@ -597,7 +623,7 @@ export function FarmHero({
           transformOrigin: 'center center',
           willChange: 'transform',
           transition: 'transform 0.08s ease-out',
-          touchAction: 'none',
+          touchAction: isHeroLocked ? 'none' : 'pan-y',
           pointerEvents: 'none',
         }}
         onError={(e) => {
@@ -646,7 +672,9 @@ export function FarmHero({
       </div>
 
       <button
+        type="button"
         onClick={unlockAndScroll}
+        onTouchEnd={unlockAndScroll}
         style={{
           position: 'absolute',
           top: 'clamp(80px, 10vh, 108px)',
@@ -666,7 +694,9 @@ export function FarmHero({
           letterSpacing: '0.05em',
           cursor: 'pointer',
           transition: 'all 0.2s ease',
-          zIndex: 25,
+          pointerEvents: 'auto',
+          touchAction: 'manipulation',
+          zIndex: 35,
         }}
       >
         <span>Skip to Market</span>
@@ -935,7 +965,9 @@ export function FarmHero({
             }}
           >
             <button
+              type="button"
               onClick={unlockAndScroll}
+              onTouchEnd={unlockAndScroll}
               style={{
                 fontFamily: SANS,
                 fontSize: 'clamp(14px, 1.2vw, 16px)',
@@ -951,6 +983,9 @@ export function FarmHero({
                 alignItems: 'center',
                 gap: '10px',
                 transition: 'all 0.25s ease',
+                pointerEvents: 'auto',
+                touchAction: 'manipulation',
+                zIndex: 35,
               }}
             >
               <span>Explore Fresh Harvests</span>
@@ -973,8 +1008,18 @@ export function FarmHero({
               onClick={(e) => {
                 e.preventDefault();
                 unlockAndScroll();
-                const elem = document.getElementById('traceability');
-                if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                  const elem = document.getElementById('traceability');
+                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                }, 40);
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                unlockAndScroll();
+                setTimeout(() => {
+                  const elem = document.getElementById('traceability');
+                  if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+                }, 40);
               }}
               style={{
                 fontFamily: SANS,
@@ -991,6 +1036,9 @@ export function FarmHero({
                 alignItems: 'center',
                 gap: '8px',
                 transition: 'all 0.25s ease',
+                pointerEvents: 'auto',
+                touchAction: 'manipulation',
+                zIndex: 35,
               }}
             >
               <span>Verify Batch QR</span>

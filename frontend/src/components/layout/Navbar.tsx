@@ -249,12 +249,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0 whitespace-nowrap">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap">
           {onOpenTracker && (
             <button
               type="button"
               onClick={onOpenTracker}
-              className="flex items-center justify-center gap-1.5 h-8.5 w-8.5 sm:w-auto sm:h-10 rounded-full border border-stone-200/90 bg-white p-0 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:bg-stone-50 hover:border-stone-300 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+              className="hidden sm:flex items-center justify-center gap-1.5 h-8.5 w-8.5 sm:w-auto sm:h-10 rounded-full border border-stone-200/90 bg-white p-0 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:bg-stone-50 hover:border-stone-300 transition-all shrink-0 whitespace-nowrap cursor-pointer"
               title="Track Orders"
             >
               <Package className="h-4 w-4 text-[#183c2a]" />
@@ -286,7 +286,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#183c2a]/10 text-[#183c2a]">
                   {getRoleIcon(currentUser.role)}
                 </div>
-                <span className="font-bold text-[#182019] max-w-[55px] sm:max-w-[100px] truncate hidden xs:inline">
+                <span className="font-bold text-[#182019] max-w-[50px] sm:max-w-[100px] truncate hidden xs:inline">
                   {currentUser.name.split(' ')[0]}
                 </span>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden 2xl:inline">
