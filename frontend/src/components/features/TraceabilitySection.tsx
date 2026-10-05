@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   ShieldCheck,
@@ -15,6 +15,10 @@ import {
   Copy,
   FileText,
   Code,
+  Play,
+  ChevronRight,
+  Truck,
+  Clock,
 } from 'lucide-react';
 import { useFarm } from '../../context/FarmContext';
 import { TraceabilityBatch } from '../../types';
@@ -26,7 +30,7 @@ interface TraceabilitySectionProps {
 export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
   activeBatchId = 'F2S-TM-20260920-01',
 }) => {
-  const { batches, setSelectedBatchId } = useFarm();
+  const { batches, setSelectedBatchId, produceList } = useFarm();
   const [searchId, setSearchId] = useState<string>(activeBatchId);
   const [currentBatch, setCurrentBatch] = useState<TraceabilityBatch>(() => {
     return batches[activeBatchId] || Object.values(batches)[0];
@@ -34,11 +38,38 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [activeStageIdx, setActiveStageIdx] = useState<number | null>(null);
+  const [activeStageIdx, setActiveStageIdx] = useState<number>(() => {
+    const initial = batches[activeBatchId] || Object.values(batches)[0];
+    return initial?.timeline ? initial.timeline.length - 1 : 0;
+  });
   const [showXmlModal, setShowXmlModal] = useState(false);
   const [xmlContent, setXmlContent] = useState<string>('');
   const [parsedXmlBatches, setParsedXmlBatches] = useState<any[]>([]);
   const [isXmlLoading, setIsXmlLoading] = useState(false);
+
+  // Dynamic Batch Presets from live batches registry + produceList
+  const dynamicBatches = useMemo(() => {
+    const list: { id: string; name: string }[] = [];
+    const seen = new Set<string>();
+
+    // 1. All registered batches in context
+    Object.values(batches).forEach((b) => {
+      if (b.batchId && !seen.has(b.batchId)) {
+        seen.add(b.batchId);
+        list.push({ id: b.batchId, name: b.produceName });
+      }
+    });
+
+    // 2. All produce items listed by farmers that carry batch IDs
+    produceList.forEach((p) => {
+      if (p.batchId && !seen.has(p.batchId)) {
+        seen.add(p.batchId);
+        list.push({ id: p.batchId, name: p.name });
+      }
+    });
+
+    return list;
+  }, [batches, produceList]);
 
   // Topic 4: AJAX implementation fetching Topic 5: XML Feed
   const fetchTraceabilityXml = () => {
@@ -85,6 +116,9 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
     if (activeBatchId && batches[activeBatchId]) {
       setSearchId(activeBatchId);
       setCurrentBatch(batches[activeBatchId]);
+      if (batches[activeBatchId].timeline?.length) {
+        setActiveStageIdx(batches[activeBatchId].timeline.length - 1);
+      }
     }
   }, [activeBatchId, batches]);
 
@@ -103,6 +137,9 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
     if (found) {
       setCurrentBatch(found);
       setSelectedBatchId?.(found.batchId);
+      if (found.timeline?.length) {
+        setActiveStageIdx(found.timeline.length - 1);
+      }
     }
 
     setIsVerifying(true);
@@ -114,21 +151,14 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
     }, 300);
   };
 
-  const qrPayload = `https://farm2street.in/trace/${currentBatch.batchId}`;
+  // Direct production URL on Render pointing to the exact batch
+  const qrPayload = `https://farm2street.onrender.com/?batch=${encodeURIComponent(currentBatch.batchId)}#traceability`;
 
   const handleCopyLink = () => {
     navigator.clipboard?.writeText(qrPayload);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
-
-  // Quick select presets
-  const sampleBatches = [
-    { id: 'F2S-TM-20260920-01', name: 'Heirloom Tomatoes' },
-    { id: 'F2S-BP-20260920-05', name: 'Bell Peppers' },
-    { id: 'F2S-CR-20260919-02', name: 'Organic Carrots' },
-    { id: 'F2S-SP-20260920-04', name: 'Malabar Spinach' },
-  ];
 
   return (
     <section id="traceability" className="scroll-mt-24 pt-28 pb-20 bg-[#07100b] text-[#f5f4ee]">
@@ -149,15 +179,15 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
             Every harvest crate carries a unique cryptographic batch QR code. Verify the exact field, sunrise harvest time, packing station, and transit temperature.
           </p>
 
-          {/* Quick-Select Batch Chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
-            <span className="text-[11px] text-stone-400 font-semibold mr-1">Quick Select:</span>
-            {sampleBatches.map((chip) => (
+          {/* Quick-Select Batch Chips: Dynamically from all registered farmer batches */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-6 max-w-4xl mx-auto px-2">
+            <span className="text-[11px] text-stone-400 font-semibold mr-1 shrink-0">Quick Select:</span>
+            {dynamicBatches.map((chip) => (
               <button
                 key={chip.id}
                 type="button"
                 onClick={() => handleLookup(chip.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   currentBatch.batchId === chip.id
                     ? 'bg-[#c5a880] text-[#07100b] shadow-md scale-105 ring-2 ring-[#c5a880]/40'
                     : 'bg-white/10 text-stone-300 hover:bg-white/20'
@@ -303,78 +333,180 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
             </div>
           </div>
 
-          {/* Right Column: Correctly Fixed & Mathematically Centered Timeline */}
-          <div className="lg:col-span-7 rounded-3xl border border-white/10 bg-[#111813] p-7 sm:p-8 shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#c5a880] flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                <span>Field-to-Doorstep Provenance Journey</span>
-              </h4>
-              <span className="text-[11px] text-stone-400 font-mono">
-                {currentBatch.timeline.length} Verified Milestones
-              </span>
+          {/* Right Column: Interactive Provenance Tracker & Timeline */}
+          <div className="lg:col-span-7 rounded-3xl border border-white/10 bg-[#111813] p-6 sm:p-8 shadow-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-white/10">
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#c5a880] flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  <span>Field-to-Doorstep Provenance Journey</span>
+                </h4>
+                <div className="text-[11px] text-stone-400 font-mono mt-0.5">
+                  Milestone {activeStageIdx + 1} of {currentBatch.timeline.length}:{' '}
+                  <span className="text-emerald-400 font-semibold">
+                    {currentBatch.timeline[activeStageIdx]?.stage || 'Verified'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Interactive Step Advancement Simulation Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  const nextIdx = (activeStageIdx + 1) % currentBatch.timeline.length;
+                  setActiveStageIdx(nextIdx);
+                }}
+                className="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-full bg-white/10 hover:bg-[#c5a880] hover:text-[#07100b] text-[#c5a880] border border-[#c5a880]/30 px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                title="Advance to next verified milestone"
+              >
+                <Play className="h-3 w-3 fill-current" />
+                <span>Advance Tracker</span>
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            </div>
+
+            {/* Horizontal 5-Stage Interactive Milestone Stepper */}
+            <div className="mb-6 p-3 rounded-2xl bg-black/40 border border-white/10 overflow-x-auto">
+              <div className="flex items-center justify-between min-w-[340px] gap-1 relative">
+                {/* Connecting background progress line */}
+                <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-[2px] bg-white/10 -z-0" />
+                <div
+                  className="absolute top-1/2 left-4 -translate-y-1/2 h-[2px] bg-gradient-to-r from-emerald-500 to-[#c5a880] transition-all duration-300 -z-0"
+                  style={{
+                    width: `${(activeStageIdx / Math.max(1, currentBatch.timeline.length - 1)) * 90}%`,
+                  }}
+                />
+
+                {currentBatch.timeline.map((step, idx) => {
+                  const isCurrent = activeStageIdx === idx;
+                  const isPassed = idx <= activeStageIdx;
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveStageIdx(idx)}
+                      className="relative z-10 flex flex-col items-center group cursor-pointer px-1 focus:outline-none"
+                    >
+                      <div
+                        className={`h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all shadow-md ${
+                          isCurrent
+                            ? 'bg-[#c5a880] text-[#07100b] ring-4 ring-[#c5a880]/30 scale-110'
+                            : isPassed
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-[#1a251e] text-stone-400 border border-white/20 hover:border-white/40'
+                        }`}
+                      >
+                        {isPassed && !isCurrent ? (
+                          <Check className="h-3.5 w-3.5 stroke-[3]" />
+                        ) : (
+                          <span>{idx + 1}</span>
+                        )}
+                      </div>
+                      <span
+                        className={`text-[10px] font-semibold mt-1.5 truncate max-w-[70px] text-center transition-colors ${
+                          isCurrent
+                            ? 'text-[#c5a880] font-bold'
+                            : isPassed
+                            ? 'text-emerald-400'
+                            : 'text-stone-500'
+                        }`}
+                      >
+                        {step.stage}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Continuous Vertical Timeline with Exact Circle Stem Centering */}
             <div className="space-y-4">
               {currentBatch.timeline.map((event, idx) => {
                 const isSelected = activeStageIdx === idx;
+                const isPassed = idx <= activeStageIdx;
                 const isLast = idx === currentBatch.timeline.length - 1;
 
                 return (
                   <div
                     key={idx}
-                    onClick={() => setActiveStageIdx(isSelected ? null : idx)}
+                    onClick={() => setActiveStageIdx(idx)}
                     className="flex gap-4 items-stretch group cursor-pointer"
                   >
                     {/* Centered Indicator Stem Column */}
                     <div className="flex flex-col items-center shrink-0 w-6">
                       {/* Step Circle Node */}
                       <div
-                        className={`h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                        className={`h-6 w-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
                           isSelected
                             ? 'border-[#c5a880] bg-[#183c2a] shadow-[0_0_12px_rgba(197,168,128,0.9)] scale-110'
-                            : 'border-[#c5a880] bg-[#07100b] group-hover:border-emerald-400'
+                            : isPassed
+                            ? 'border-emerald-500 bg-emerald-950 text-emerald-400'
+                            : 'border-white/20 bg-[#07100b] group-hover:border-white/40'
                         }`}
                       >
-                        <div
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            isSelected ? 'bg-emerald-400 animate-pulse' : 'bg-[#c5a880]'
-                          }`}
-                        />
+                        {isPassed && !isSelected ? (
+                          <Check className="h-3 w-3 text-emerald-400" />
+                        ) : (
+                          <div
+                            className={`h-2 w-2 rounded-full ${
+                              isSelected ? 'bg-emerald-400 animate-pulse' : 'bg-[#c5a880]'
+                            }`}
+                          />
+                        )}
                       </div>
 
                       {/* Continuous Connecting Line to Next Node */}
                       {!isLast && (
-                        <div className="w-[2px] grow bg-gradient-to-b from-[#c5a880] via-[#c5a880]/50 to-emerald-500/25 my-1" />
+                        <div
+                          className={`w-[2px] grow my-1 transition-colors ${
+                            idx < activeStageIdx
+                              ? 'bg-gradient-to-b from-emerald-500 to-[#c5a880]'
+                              : 'bg-white/10'
+                          }`}
+                        />
                       )}
                     </div>
 
                     {/* Step Card Content */}
                     <div className={`grow ${!isLast ? 'pb-4' : 'pb-0'}`}>
-                      <div className="rounded-2xl bg-white/5 border border-white/5 p-4 hover:border-white/15 hover:bg-white/[0.07] transition-all">
+                      <div
+                        className={`rounded-2xl p-4 transition-all ${
+                          isSelected
+                            ? 'bg-white/[0.08] border-2 border-[#c5a880]/60 shadow-lg'
+                            : 'bg-white/5 border border-white/5 hover:border-white/15 hover:bg-white/[0.07]'
+                        }`}
+                      >
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
-                          <span className="font-sans text-sm sm:text-base font-bold tracking-tight text-white group-hover:text-[#c5a880] transition-colors">
-                            {event.stage}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-stone-300">
+                              Step {idx + 1}
+                            </span>
+                            <span className="font-sans text-sm sm:text-base font-bold tracking-tight text-white group-hover:text-[#c5a880] transition-colors">
+                              {event.stage}
+                            </span>
+                          </div>
                           <span className="text-[11px] font-mono text-[#c5a880]">
                             {event.timestamp}
                           </span>
                         </div>
-                        <div className="text-xs text-stone-400 mt-0.5">
-                          {event.location}
+                        <div className="text-xs text-stone-400 mt-1 flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          <span>{event.location}</span>
                         </div>
-                        <p className="text-xs text-stone-300 mt-2 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-white/5">
+                        <p className="text-xs text-stone-300 mt-2.5 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-white/5">
                           {event.details}
                         </p>
 
                         {isSelected && (
                           <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center gap-3 text-[11px] text-emerald-400 font-mono">
                             <span className="flex items-center gap-1">
-                              <ShieldCheck className="h-3 w-3" /> Digital Signature Verified
+                              <ShieldCheck className="h-3.5 w-3.5" /> Verified Ledger Signature
                             </span>
                             <span>•</span>
-                            <span className="text-stone-300">GPS Geo-Fix: 10.658° N, 77.008° E</span>
+                            <span className="text-stone-300">GPS: 10.658° N, 77.008° E</span>
+                            <span>•</span>
+                            <span className="text-[#c5a880]">Temp Log: {currentBatch.temperatureAtTransit}</span>
                           </div>
                         )}
                       </div>

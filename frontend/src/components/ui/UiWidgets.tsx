@@ -325,6 +325,7 @@ export function FarmHero({
   onScrubComplete,
 }: FarmHeroProps) {
   const finalImage = posterSrc || imageSrc || DEFAULT_IMAGE;
+  const trackRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
@@ -336,17 +337,20 @@ export function FarmHero({
 
   const unlockAndScroll = () => {
     const target =
-      document.getElementById('marketplace') || document.getElementById('fresh-harvests');
+      document.getElementById('fresh-harvests') || document.getElementById('marketplace');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
+    } else if (trackRef.current) {
+      const top = trackRef.current.offsetTop + trackRef.current.offsetHeight;
+      window.scrollTo({ top, behavior: 'smooth' });
     } else {
-      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+      window.scrollTo({ top: window.innerHeight * 1.5, behavior: 'smooth' });
     }
   };
 
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
+    const track = trackRef.current;
+    if (!track) return;
 
     const reduceMotion =
       typeof window !== 'undefined' &&
@@ -359,7 +363,7 @@ export function FarmHero({
 
     function updateVisuals(p: number) {
       if (imageRef.current) {
-        const scale = 1 + p * 0.06;
+        const scale = 1 + p * 0.08;
         imageRef.current.style.transform = `scale(${scale})`;
       }
 
@@ -368,15 +372,16 @@ export function FarmHero({
         titleRef.current.style.opacity = String(t);
         titleRef.current.style.transform = `translateY(${(1 - t) * -32}px) scale(${0.94 + t * 0.06})`;
         titleRef.current.style.filter = `blur(${(1 - t) * 12}px)`;
+        titleRef.current.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
       }
 
       if (waypointRef.current) {
         let midOpacity = 0;
-        if (p >= 0.3 && p <= 0.7) {
-          if (p < 0.5) {
-            midOpacity = (p - 0.3) / 0.2;
+        if (p >= 0.28 && p <= 0.68) {
+          if (p < 0.48) {
+            midOpacity = (p - 0.28) / 0.2;
           } else {
-            midOpacity = (0.7 - p) / 0.2;
+            midOpacity = (0.68 - p) / 0.2;
           }
         }
         waypointRef.current.style.opacity = String(clamp(midOpacity, 0, 1));
@@ -384,14 +389,15 @@ export function FarmHero({
       }
 
       if (hintRef.current) {
-        hintRef.current.style.opacity = p > 0.05 ? '0' : '1';
+        hintRef.current.style.opacity = p > 0.08 ? '0' : '1';
       }
 
       if (taglineRef.current) {
-        const t = clamp((p - 0.68) / 0.32, 0, 1);
+        const t = clamp((p - 0.65) / 0.35, 0, 1);
         taglineRef.current.style.opacity = String(t);
         taglineRef.current.style.transform = `translateY(${(1 - t) * 24}px) scale(${0.95 + t * 0.05})`;
         taglineRef.current.style.filter = `blur(${(1 - t) * 8}px)`;
+        taglineRef.current.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
       }
 
       if (progressBarRef.current) {
@@ -419,53 +425,50 @@ export function FarmHero({
         return;
       }
 
-      currentProgress += delta * 0.22;
+      currentProgress += delta * 0.25;
       updateVisuals(currentProgress);
       rafId = requestAnimationFrame(frame);
     }
 
     const onScroll = () => {
-      const scrollY = window.scrollY;
-      const h = window.innerHeight || 800;
-      const p = clamp(scrollY / (h * 0.85), 0, 1);
+      if (!trackRef.current) return;
+      const rect = trackRef.current.getBoundingClientRect();
+      const totalScroll = trackRef.current.offsetHeight - window.innerHeight;
+      if (totalScroll <= 0) return;
+      const p = clamp(-rect.top / totalScroll, 0, 1);
       targetProgress = p;
       wakeUpLoop();
-      if (p >= 0.95 && onScrubComplete) {
+      if (p >= 0.98 && onScrubComplete) {
         onScrubComplete();
       }
     };
 
-    const onWheel = (e: WheelEvent) => {
-      if (window.scrollY <= 15) {
-        targetProgress = clamp(targetProgress + e.deltaY / (scrubDistance * 0.5), 0, 1);
-        wakeUpLoop();
-        if (targetProgress >= 0.95 && onScrubComplete) {
-          onScrubComplete();
-        }
-      }
-    };
-
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('wheel', onWheel, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
     onScroll();
 
     return () => {
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('resize', onScroll);
       cancelAnimationFrame(rafId);
     };
   }, [scrubDistance, onScrubComplete]);
 
   return (
     <div
-      ref={sectionRef}
-      className={`relative h-[100svh] min-h-[580px] w-full overflow-hidden select-none ${className || ''}`}
-      style={{
-        background: COL_BG,
-        touchAction: 'pan-y',
-        ...style,
-      }}
+      ref={trackRef}
+      className="relative w-full h-[220vh] sm:h-[250vh]"
+      style={{ background: COL_BG }}
     >
+      <div
+        ref={sectionRef}
+        className={`sticky top-0 h-[100svh] min-h-[580px] w-full overflow-hidden select-none ${className || ''}`}
+        style={{
+          background: COL_BG,
+          touchAction: 'pan-y',
+          ...style,
+        }}
+      >
       <img
         ref={imageRef}
         src={finalImage}
@@ -1014,6 +1017,7 @@ export function FarmHero({
           </a>
         </span>
       )}
+      </div>
     </div>
   );
 }

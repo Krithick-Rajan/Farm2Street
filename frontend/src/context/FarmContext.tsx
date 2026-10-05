@@ -188,7 +188,88 @@ const INITIAL_SUBSCRIPTIONS: UserSubscription[] = [
   },
 ];
 
-const INITIAL_ORDERS: Order[] = [];
+const INITIAL_ORDERS: Order[] = [
+  {
+    id: 'ORD-2026-8841',
+    customerId: 'usr-krithick',
+    customerName: 'Krithick Rajan',
+    customerPhone: '+91 98765 43210',
+    deliveryAddress: '14, Greenview Enclave, Avinashi Road, Coimbatore',
+    farmPickupLocation: 'Green Valley Organic Farms, Sector 4',
+    farmerName: 'Green Valley Organic Farms',
+    items: [
+      {
+        produceId: 'prod-1',
+        name: 'Heirloom Vine Tomatoes',
+        price: 35,
+        quantity: 2,
+        unit: 'kg',
+        farmer: 'Green Valley Organic Farms',
+        image: 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=900&q=85',
+      },
+      {
+        produceId: 'prod-2',
+        name: 'Organic Carrots',
+        price: 50,
+        quantity: 1,
+        unit: 'kg',
+        farmer: 'Sunrise Fields',
+        image: 'https://images.unsplash.com/photo-1445282768818-728615cc910a?auto=format&fit=crop&w=900&q=85',
+      },
+    ],
+    subtotal: 120,
+    deliveryFee: 0,
+    totalAmount: 120,
+    status: 'Out for Delivery',
+    paymentMethod: 'Razorpay UPI',
+    paymentId: 'pay_live_f2s_demo_982',
+    razorpayOrderId: 'order_live_982',
+    paymentStatus: 'paid',
+    batchId: 'F2S-TM-20260920-01',
+    distanceKm: 4.8,
+    estimatedDeliveryMinutes: 25,
+    createdAt: 'Today 08:30 AM',
+    updatedAt: 'Today 11:45 AM',
+    assignedDeliveryPartner: {
+      id: 'drv-001',
+      name: 'Senthil Kumar',
+      phone: '+91 98765 43210',
+      vehicle: 'Electric Cargo EV-12',
+    },
+    timeline: [
+      {
+        status: 'Order Placed',
+        timestamp: 'Today 08:30 AM',
+        note: 'Direct harvest order received from customer.',
+      },
+      {
+        status: 'Order Confirmed',
+        timestamp: 'Today 08:35 AM',
+        note: 'Razorpay UPI payment confirmed.',
+      },
+      {
+        status: 'Preparing',
+        timestamp: 'Today 09:15 AM',
+        note: 'Picked fresh from Green Valley beds and quality graded.',
+      },
+      {
+        status: 'Ready for Pickup',
+        timestamp: 'Today 10:15 AM',
+        note: 'Sealed in biodegradable crates with batch QR provenance tag at farm gate.',
+      },
+      {
+        status: 'Delivery Partner Assigned',
+        timestamp: 'Today 10:45 AM',
+        note: 'Assigned to EV Delivery Rider #12. Staged at Green Valley Micro-Hub.',
+      },
+      {
+        status: 'Out for Delivery',
+        timestamp: 'Today 11:45 AM',
+        note: 'EV Rider #12 en route to customer doorstep.',
+      },
+    ],
+  },
+];
 
 const INITIAL_REVIEWS: CustomerReview[] = [
   {
@@ -266,17 +347,117 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeView, setActiveView] = useState<ActiveView>('marketplace');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
 
-  const [produceList, setProduceList] = useState<Produce[]>(INITIAL_PRODUCE);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+  const [produceList, setProduceList] = useState<Produce[]>(() => {
+    try {
+      const saved = localStorage.getItem('farm2street_produce_list');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Could not read produce from storage', e);
+    }
+    return INITIAL_PRODUCE;
+  });
+
+  const [orders, setOrders] = useState<Order[]>(() => {
+    try {
+      const saved = localStorage.getItem('farm2street_orders');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Could not read orders from storage', e);
+    }
+    return INITIAL_ORDERS;
+  });
+
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>(INITIAL_SUBSCRIPTIONS);
-  const [batches, setBatches] = useState<Record<string, TraceabilityBatch>>(TRACEABILITY_MOCK);
+
+  const [batches, setBatches] = useState<Record<string, TraceabilityBatch>>(() => {
+    try {
+      const saved = localStorage.getItem('farm2street_batches');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Could not read batches from storage', e);
+    }
+    return TRACEABILITY_MOCK;
+  });
+
   const [selectedBatchId, setSelectedBatchId] = useState<string>('F2S-TM-20260920-01');
   const [activeTrackOrderId, setActiveTrackOrderId] = useState<string | null>(null);
-  const [farmerProfile, setFarmerProfile] = useState<FarmerProfile>(INITIAL_FARMER_PROFILE);
+
+  const [farmerProfile, setFarmerProfile] = useState<FarmerProfile>(() => {
+    try {
+      const saved = localStorage.getItem('farm2street_farmer_profile');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Could not read farmer profile from storage', e);
+    }
+    return INITIAL_FARMER_PROFILE;
+  });
+
   const [deliveryPartnerProfile, setDeliveryPartnerProfile] = useState<DeliveryPartnerProfile>(INITIAL_DELIVERY_PROFILE);
   const [settlements, setSettlements] = useState<Settlement[]>(INITIAL_SETTLEMENTS);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionBox[]>(SUBSCRIPTION_BOXES);
   const [isSupabaseConnected, setIsSupabaseConnected] = useState<boolean>(true);
+
+  // Dynamic persistence across state updates
+  useEffect(() => {
+    try {
+      localStorage.setItem('farm2street_produce_list', JSON.stringify(produceList));
+    } catch {}
+  }, [produceList]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('farm2street_orders', JSON.stringify(orders));
+    } catch {}
+  }, [orders]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('farm2street_batches', JSON.stringify(batches));
+    } catch {}
+  }, [batches]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('farm2street_farmer_profile', JSON.stringify(farmerProfile));
+    } catch {}
+  }, [farmerProfile]);
+
+  // Dynamic Live Produce Synchronization from Supabase Database
+  useEffect(() => {
+    if (!supabase) return;
+    supabase
+      .from('produce')
+      .select('*')
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          const mapped: Produce[] = data.map((row: any) => ({
+            id: String(row.id),
+            name: row.name,
+            category: row.category || 'Vegetables',
+            price: Number(row.price),
+            unit: row.unit || 'kg',
+            farmer: row.farm_name || 'Regional Farm',
+            farmLocation: row.farm_location || 'Local Agro Belt',
+            harvestDate: row.harvest_date ? `Harvested ${row.harvest_date}` : 'Today 06:00 AM',
+            availableQty: Number(row.stock || row.available_qty || 50),
+            image: row.image_url || 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=900&q=85',
+            description: row.description || `${row.name} freshly harvested from partner beds.`,
+            batchId: row.batch_id || `F2S-${row.name.slice(0, 2).toUpperCase()}-${row.id}`,
+            organic: row.organic ?? true,
+            rating: Number(row.rating || 4.9),
+          }));
+
+          setProduceList((prev) => {
+            const existingIds = new Set(prev.map((p) => p.id));
+            const newFromDb = mapped.filter((m) => !existingIds.has(m.id));
+            if (newFromDb.length === 0) return prev;
+            return [...newFromDb, ...prev];
+          });
+        }
+      }, (e) => {
+        console.info('Supabase dynamic produce query notice:', e);
+      });
+  }, []);
 
   // Dynamic Customer Reviews State with LocalStorage Persistence
   const [reviews, setReviews] = useState<CustomerReview[]>(() => {
@@ -569,11 +750,66 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true };
   };
 
-  // Produce management with Supabase write
+  // Produce management with Supabase write & dynamic traceability batch auto-generation
   const addProduce = async (item: Omit<Produce, 'id'>) => {
     const newId = `prod-${Date.now().toString().slice(-4)}`;
-    const newProduce: Produce = { ...item, id: newId };
+    const batchId = item.batchId || `F2S-${item.name.slice(0, 2).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+    const newProduce: Produce = { ...item, id: newId, batchId };
     setProduceList((prev) => [newProduce, ...prev]);
+
+    // Automatically register batch into dynamic Traceability Engine
+    const nowStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' 06:00 AM';
+    const autoBatch: TraceabilityBatch = {
+      batchId,
+      produceName: item.name,
+      farmName: item.farmer || farmerProfile.farmName,
+      farmerName: farmerProfile.name,
+      location: item.farmLocation || farmerProfile.location,
+      fieldId: `Field-${item.category}-01`,
+      harvestDate: item.harvestDate || nowStr,
+      packingDate: `${nowStr} (Packhouse-1)`,
+      qualityGrade: 'Grade A+ (Verified Export)',
+      pesticideFree: item.organic ?? true,
+      soilHealthIndex: farmerProfile.soilCarbonIndex || 'Optimal (Organic Carbon 0.84%)',
+      temperatureAtTransit: '16°C (Aerated Crates)',
+      timeline: [
+        {
+          stage: 'Harvested',
+          timestamp: item.harvestDate || nowStr,
+          location: item.farmLocation || farmerProfile.farmName,
+          details: `Hand-picked and logged by grower ${farmerProfile.name} at ${item.farmer || farmerProfile.farmName}.`,
+        },
+        {
+          stage: 'Quality Checked',
+          timestamp: 'Today 07:15 AM',
+          location: 'On-farm Packhouse',
+          details: 'Physical grading and skin integrity check verified. Zero chemical spray residue.',
+        },
+        {
+          stage: 'Packed',
+          timestamp: 'Today 08:30 AM',
+          location: 'Farm2Street Micro-Hub',
+          details: 'Cushioned in biodegradable sugarcane pulp trays with tamper-evident QR provenance seal.',
+        },
+        {
+          stage: 'Dispatched',
+          timestamp: 'Today 09:45 AM',
+          location: 'Electric Transit Route',
+          details: 'Dispatched via climate-controlled EV Cargo delivery fleet.',
+        },
+        {
+          stage: 'Delivered',
+          timestamp: 'Today 12:30 PM',
+          location: 'Customer Doorstep',
+          details: 'Direct transfer within 6 hours of morning field harvest.',
+        },
+      ],
+    };
+
+    setBatches((prev) => ({
+      ...prev,
+      [batchId]: autoBatch,
+    }));
 
     try {
       if (supabase) {
@@ -586,7 +822,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
           farm_name: item.farmer,
           farm_location: item.farmLocation,
           harvest_date: item.harvestDate || new Date().toISOString().split('T')[0],
-          batch_id: item.batchId || `BATCH-${Date.now().toString().slice(-6)}`,
+          batch_id: batchId,
           image_url: item.image,
           organic: item.organic ?? false,
         });

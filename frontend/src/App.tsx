@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FarmHero, TrailingCursor } from './components/ui/UiWidgets';
 import { CoverFlowCarousel, defaultDishes } from './components/ui/3-d-coverflow-carousel';
 import { Navbar, LeftSlideNav, Footer } from './components/layout/Navbar';
@@ -44,6 +44,31 @@ function AppContent() {
 
   // Active unfulfilled orders count
   const activeOrdersCount = orders.filter((o) => o.status !== 'Delivered').length;
+
+  // Handle direct QR code scans / query params on app load (e.g. https://farm2street.onrender.com/?batch=...#traceability)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const scannedBatch = params.get('batch') || params.get('trace') || params.get('batchId');
+    if (scannedBatch) {
+      setSelectedBatchId(scannedBatch);
+      setActiveView('marketplace');
+      setTimeout(() => {
+        const el = document.getElementById('traceability');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500);
+    } else if (window.location.hash === '#traceability') {
+      setActiveView('marketplace');
+      setTimeout(() => {
+        const el = document.getElementById('traceability');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500);
+    }
+  }, [setSelectedBatchId, setActiveView]);
 
   // Cart operations
   const handleAddToCart = (produce: Produce) => {

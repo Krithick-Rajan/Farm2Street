@@ -41,31 +41,37 @@ export const FarmerPortal: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
 
-  // New Produce Form State
+  // Dynamic Produce Form State (clean, un-hardcoded inputs)
   const [newProduceName, setNewProduceName] = useState('');
   const [newCategory, setNewCategory] = useState<'Vegetables' | 'Greens' | 'Root' | 'Exotic'>('Vegetables');
-  const [newPrice, setNewPrice] = useState(40);
+  const [newPrice, setNewPrice] = useState<number | ''>('');
   const [newUnit, setNewUnit] = useState('kg');
-  const [newQty, setNewQty] = useState(80);
-  const [newImage, setNewImage] = useState('https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=900&q=85');
+  const [newQty, setNewQty] = useState<number | ''>('');
+  const [newImage, setNewImage] = useState('');
   const [newDesc, setNewDesc] = useState('');
 
-  // New Batch Form State
-  const [batchProduceName, setBatchProduceName] = useState('Heirloom Vine Tomatoes');
-  const [batchFieldId, setBatchFieldId] = useState('Field-North-04 (Certified Organic)');
+  // Dynamic Batch Form State
+  const [batchProduceName, setBatchProduceName] = useState('');
+  const [batchFieldId, setBatchFieldId] = useState('');
   const [batchGrade, setBatchGrade] = useState('Grade A+ (Export Quality)');
   const [batchSoilCarbon, setBatchSoilCarbon] = useState('0.84% Optimal');
 
-  // Filter orders dynamically matching this farmer's profile or farm name
+  // Filter orders dynamically matching this logged-in farmer's profile or items
   const farmerOrders = orders.filter((o) => {
     const fName = (farmerProfile?.name || currentUser?.name || '').toLowerCase();
     const farm = (farmerProfile?.farmName || '').toLowerCase();
     const orderFarmer = (o.farmerName || '').toLowerCase();
+    const hasFarmerItem = o.items?.some((i) => {
+      const pFarmer = (i.farmer || '').toLowerCase();
+      return (farm && pFarmer.includes(farm)) || (fName && pFarmer.includes(fName.split(' ')[0]));
+    });
+
     return (
       (farm && orderFarmer.includes(farm)) ||
       (fName && orderFarmer.includes(fName.split(' ')[0])) ||
-      orderFarmer.includes('green valley') ||
-      orderFarmer.includes('ramesh')
+      hasFarmerItem ||
+      // When viewing in superadmin or active demo, permit viewing
+      currentUser?.role === 'admin'
     );
   });
   const pendingPrepOrders = farmerOrders.filter(
@@ -75,53 +81,93 @@ export const FarmerPortal: React.FC = () => {
 
   const handleCreateProduce = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProduceName) return;
+    if (!newProduceName.trim()) return;
+
+    const categoryImages: Record<string, string> = {
+      Vegetables: 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=900&q=85',
+      Greens: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=900&q=85',
+      Root: 'https://images.unsplash.com/photo-1445282768818-728615cc910a?auto=format&fit=crop&w=900&q=85',
+      Exotic: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?auto=format&fit=crop&w=800&q=80',
+    };
+
+    const finalImage = newImage.trim() || categoryImages[newCategory] || categoryImages.Vegetables;
+    const finalPrice = typeof newPrice === 'number' && newPrice > 0 ? newPrice : 40;
+    const finalQty = typeof newQty === 'number' && newQty > 0 ? newQty : 50;
+    const cleanName = newProduceName.trim();
 
     addProduce({
-      name: newProduceName,
+      name: cleanName,
       category: newCategory,
-      price: Number(newPrice),
+      price: finalPrice,
       unit: newUnit,
       farmer: farmerProfile.farmName,
       farmLocation: farmerProfile.location,
       harvestDate: 'Today 06:00 AM',
-      availableQty: Number(newQty),
-      image: newImage,
-      description: newDesc || `${newProduceName} freshly harvested from ${farmerProfile.farmName}.`,
-      batchId: `F2S-BATCH-${Date.now().toString().slice(-6)}`,
+      availableQty: finalQty,
+      image: finalImage,
+      description: newDesc.trim() || `${cleanName} freshly harvested from ${farmerProfile.farmName}.`,
+      batchId: `F2S-${cleanName.slice(0, 2).toUpperCase()}-${Date.now().toString().slice(-6)}`,
       organic: true,
       rating: 5.0,
     });
 
     setIsAddModalOpen(false);
     setNewProduceName('');
+    setNewPrice('');
+    setNewQty('');
+    setNewImage('');
     setNewDesc('');
   };
 
   const handleCreateBatch = (e: React.FormEvent) => {
     e.preventDefault();
-    const batchId = `F2S-BT-${Date.now().toString().slice(-6)}`;
-    const nowStr = new Date().toLocaleString();
+    const cleanProduceName = batchProduceName.trim() || 'Harvest Produce';
+    const batchId = `F2S-${cleanProduceName.slice(0, 2).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+    const nowStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' 06:00 AM';
 
     const newBatch: TraceabilityBatch = {
       batchId,
-      produceName: batchProduceName,
+      produceName: cleanProduceName,
       farmName: farmerProfile.farmName,
       farmerName: farmerProfile.name,
       location: farmerProfile.location,
-      fieldId: batchFieldId,
+      fieldId: batchFieldId.trim() || 'Field-North-01',
       harvestDate: nowStr,
       packingDate: `${nowStr} (Packhouse-1)`,
-      qualityGrade: batchGrade,
+      qualityGrade: batchGrade.trim() || 'Grade A+ (Export Quality)',
       pesticideFree: true,
-      soilHealthIndex: batchSoilCarbon,
+      soilHealthIndex: batchSoilCarbon.trim() || 'Optimal Organic Carbon',
       temperatureAtTransit: '16°C (Aerated Crates)',
       timeline: [
         {
           stage: 'Harvest Logged',
           timestamp: nowStr,
           location: farmerProfile.farmName,
-          details: `Harvested from ${batchFieldId}. Quality graded ${batchGrade}.`,
+          details: `Harvested from ${batchFieldId.trim() || 'Field-North-01'}. Graded ${batchGrade}.`,
+        },
+        {
+          stage: 'Quality Checked',
+          timestamp: 'Today 07:15 AM',
+          location: 'On-farm Packhouse',
+          details: 'Physical grading and moisture check verified. Passed zero chemical pesticide threshold.',
+        },
+        {
+          stage: 'Packed',
+          timestamp: 'Today 08:30 AM',
+          location: 'Farm2Street Micro-Hub',
+          details: 'Cushioned in biodegradable sugarcane pulp trays with tamper-evident batch provenance seal.',
+        },
+        {
+          stage: 'Dispatched',
+          timestamp: 'Today 09:45 AM',
+          location: 'Transit Route',
+          details: 'Dispatched via electric temperature-regulated delivery fleet.',
+        },
+        {
+          stage: 'Delivered',
+          timestamp: 'Today 12:30 PM',
+          location: 'Customer Doorstep',
+          details: 'Direct transfer within 6 hours of morning field harvest.',
         },
       ],
     };
@@ -129,6 +175,8 @@ export const FarmerPortal: React.FC = () => {
     createBatch(newBatch);
     setSelectedBatchId(batchId);
     setIsBatchModalOpen(false);
+    setBatchProduceName('');
+    setBatchFieldId('');
   };
 
   return (
@@ -617,9 +665,10 @@ export const FarmerPortal: React.FC = () => {
                     <input
                       type="number"
                       required
-                      min={5}
+                      min={1}
                       value={newPrice}
-                      onChange={(e) => setNewPrice(Number(e.target.value))}
+                      onChange={(e) => setNewPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                      placeholder="e.g. 40"
                       className="w-full rounded-lg border border-stone-300 p-2.5"
                     />
                   </div>
@@ -630,18 +679,20 @@ export const FarmerPortal: React.FC = () => {
                       required
                       min={1}
                       value={newQty}
-                      onChange={(e) => setNewQty(Number(e.target.value))}
+                      onChange={(e) => setNewQty(e.target.value === '' ? '' : Number(e.target.value))}
+                      placeholder="e.g. 80"
                       className="w-full rounded-lg border border-stone-300 p-2.5"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-stone-700 mb-1">Produce Image URL</label>
+                  <label className="block font-semibold text-stone-700 mb-1">Produce Image URL (Optional)</label>
                   <input
                     type="url"
                     value={newImage}
                     onChange={(e) => setNewImage(e.target.value)}
+                    placeholder="https://... (or leave blank for automatic high-res category photo)"
                     className="w-full rounded-lg border border-stone-300 p-2.5 text-[11px] font-mono"
                   />
                 </div>
@@ -692,6 +743,7 @@ export const FarmerPortal: React.FC = () => {
                     required
                     value={batchProduceName}
                     onChange={(e) => setBatchProduceName(e.target.value)}
+                    placeholder="e.g. Heirloom Vine Tomatoes, Bell Peppers"
                     className="w-full rounded-lg border border-stone-300 p-2.5"
                   />
                 </div>
@@ -701,6 +753,7 @@ export const FarmerPortal: React.FC = () => {
                     type="text"
                     value={batchFieldId}
                     onChange={(e) => setBatchFieldId(e.target.value)}
+                    placeholder="e.g. Field-North-04 (Certified Organic), Polyhouse-02"
                     className="w-full rounded-lg border border-stone-300 p-2.5"
                   />
                 </div>
@@ -711,6 +764,7 @@ export const FarmerPortal: React.FC = () => {
                       type="text"
                       value={batchGrade}
                       onChange={(e) => setBatchGrade(e.target.value)}
+                      placeholder="e.g. Grade A+ (Export Quality)"
                       className="w-full rounded-lg border border-stone-300 p-2.5"
                     />
                   </div>
@@ -720,6 +774,7 @@ export const FarmerPortal: React.FC = () => {
                       type="text"
                       value={batchSoilCarbon}
                       onChange={(e) => setBatchSoilCarbon(e.target.value)}
+                      placeholder="e.g. 0.84% Optimal (High Fertility)"
                       className="w-full rounded-lg border border-stone-300 p-2.5"
                     />
                   </div>
