@@ -325,7 +325,6 @@ export function FarmHero({
   onScrubComplete,
 }: FarmHeroProps) {
   const finalImage = posterSrc || imageSrc || DEFAULT_IMAGE;
-  const trackRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
@@ -335,23 +334,22 @@ export function FarmHero({
   const progressBarRef = useRef<HTMLDivElement>(null);
   const progressTextRef = useRef<HTMLSpanElement>(null);
 
+  const releaseLockRef = useRef<() => void>(() => {});
+
   const unlockAndScroll = () => {
+    releaseLockRef.current();
     const target =
       document.getElementById('fresh-harvests') || document.getElementById('marketplace');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
-    } else if (trackRef.current) {
-      const top = trackRef.current.offsetTop + trackRef.current.offsetHeight;
-      window.scrollTo({ top, behavior: 'smooth' });
     } else {
-      window.scrollTo({ top: window.innerHeight * 2.5, behavior: 'smooth' });
+      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
     }
   };
 
   useEffect(() => {
-    const track = trackRef.current;
     const section = sectionRef.current;
-    if (!track || !section) return;
+    if (!section) return;
 
     const reduceMotion =
       typeof window !== 'undefined' &&
@@ -360,159 +358,203 @@ export function FarmHero({
     let rafId = 0;
     let targetProgress = 0;
     let currentProgress = 0;
-    let isRunning = false;
+    let hasStartedScrolling = false;
+    let locked = false;
+    let lockedScrollY = 0;
+    let touchStartY = 0;
 
-    function updateVisuals(p: number) {
+    function engageLock() {
+      if (locked || typeof document === 'undefined') return;
+      locked = true;
+      lockedScrollY = window.scrollY;
+      const b = document.body.style;
+      b.position = 'fixed';
+      b.top = `-${lockedScrollY}px`;
+      b.left = '0';
+      b.right = '0';
+      b.width = '100%';
+      b.height = '100%';
+      b.overscrollBehavior = 'none';
+    }
+
+    function releaseLock() {
+      if (!locked || typeof document === 'undefined') return;
+      locked = false;
+      const y = lockedScrollY;
+      const b = document.body.style;
+      b.position = '';
+      b.top = '';
+      b.left = '';
+      b.right = '';
+      b.width = '';
+      b.height = '';
+      b.overscrollBehavior = '';
+      window.scrollTo(0, y);
+    }
+
+    releaseLockRef.current = releaseLock;
+
+    if (window.scrollY <= 10) {
+      engageLock();
+    }
+
+    function addDelta(deltaY: number) {
+      if (targetProgress >= 0.98 && deltaY > 0) {
+        releaseLock();
+        const target =
+          document.getElementById('fresh-harvests') || document.getElementById('marketplace');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
+        }
+        if (onScrubComplete) onScrubComplete();
+        return false;
+      }
+
+      if (targetProgress <= 0.01 && deltaY < 0) {
+        return false;
+      }
+
+      const next = clamp(targetProgress + deltaY / scrubDistance, 0, 1);
+      targetProgress = next;
+      if (targetProgress > 0.001) hasStartedScrolling = true;
+      return true;
+    }
+
+    const onWheel = (e: WheelEvent) => {
+      if (!locked) {
+        if (window.scrollY <= 5 && e.deltaY < 0) {
+          engageLock();
+          targetProgress = 1;
+          currentProgress = 1;
+        }
+        return;
+      }
+      const consumed = addDelta(e.deltaY);
+      if (consumed) {
+        e.preventDefault();
+      }
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0]?.clientY ?? 0;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY ?? touchStartY;
+      const deltaY = touchStartY - y;
+      touchStartY = y;
+      if (!locked) {
+        if (window.scrollY <= 5 && deltaY < 0) {
+          engageLock();
+          targetProgress = 1;
+          currentProgress = 1;
+        }
+        return;
+      }
+      const consumed = addDelta(deltaY);
+      if (consumed) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    section.addEventListener('touchstart', onTouchStart, { passive: true, capture: true });
+    section.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+
+    const onWindowScroll = () => {
+      if (!locked && window.scrollY <= 5) {
+        engageLock();
+      }
+    };
+    window.addEventListener('scroll', onWindowScroll, { passive: true });
+
+    function frame() {
+      currentProgress += (targetProgress - currentProgress) * 0.18;
+
       if (imageRef.current) {
-        const scale = 1 + p * 0.08;
+        const scale = 1 + currentProgress * 0.08;
         imageRef.current.style.transform = `scale(${scale})`;
       }
 
       if (titleRef.current) {
-        const t = 1 - clamp(p / 0.36, 0, 1);
+        const t = 1 - clamp(currentProgress / 0.35, 0, 1);
         titleRef.current.style.opacity = String(t);
-        titleRef.current.style.transform = `translateY(${(1 - t) * -32}px) scale(${0.94 + t * 0.06})`;
-        titleRef.current.style.filter = `blur(${(1 - t) * 12}px)`;
+        titleRef.current.style.transform = `translateY(${(1 - t) * -28}px) scale(${0.95 + t * 0.05})`;
+        titleRef.current.style.filter = `blur(${(1 - t) * 10}px)`;
         titleRef.current.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
       }
 
       if (waypointRef.current) {
         let midOpacity = 0;
-        if (p >= 0.28 && p <= 0.68) {
-          if (p < 0.48) {
-            midOpacity = (p - 0.28) / 0.2;
+        if (currentProgress >= 0.26 && currentProgress <= 0.72) {
+          if (currentProgress < 0.48) {
+            midOpacity = (currentProgress - 0.26) / 0.22;
           } else {
-            midOpacity = (0.68 - p) / 0.2;
+            midOpacity = (0.72 - currentProgress) / 0.24;
           }
         }
         waypointRef.current.style.opacity = String(clamp(midOpacity, 0, 1));
-        waypointRef.current.style.transform = `translateY(${(1 - midOpacity) * 12}px) scale(${0.96 + midOpacity * 0.04})`;
+        waypointRef.current.style.transform = `translateY(${(1 - midOpacity) * 14}px) scale(${0.96 + midOpacity * 0.04})`;
       }
 
       if (hintRef.current) {
-        hintRef.current.style.opacity = p > 0.08 ? '0' : '1';
+        hintRef.current.style.opacity = hasStartedScrolling ? '0' : '1';
       }
 
       if (taglineRef.current) {
-        const t = clamp((p - 0.65) / 0.35, 0, 1);
+        const t = clamp((currentProgress - 0.65) / 0.35, 0, 1);
         taglineRef.current.style.opacity = String(t);
-        taglineRef.current.style.transform = `translateY(${(1 - t) * 24}px) scale(${0.95 + t * 0.05})`;
+        taglineRef.current.style.transform = `translateY(${(1 - t) * 20}px) scale(${0.96 + t * 0.04})`;
         taglineRef.current.style.filter = `blur(${(1 - t) * 8}px)`;
         taglineRef.current.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
       }
 
       if (progressBarRef.current) {
-        progressBarRef.current.style.transform = `scaleX(${p})`;
+        progressBarRef.current.style.transform = `scaleX(${currentProgress})`;
       }
       if (progressTextRef.current) {
-        const pct = Math.round(p * 100);
+        const pct = Math.round(currentProgress * 100);
         progressTextRef.current.textContent = `${pct}% HARVEST JOURNEY`;
       }
-    }
 
-    function wakeUpLoop() {
-      if (!isRunning && !reduceMotion) {
-        isRunning = true;
-        rafId = requestAnimationFrame(frame);
-      }
-    }
-
-    function frame() {
-      const delta = targetProgress - currentProgress;
-      if (Math.abs(delta) < 0.001) {
-        currentProgress = targetProgress;
-        updateVisuals(currentProgress);
-        isRunning = false;
-        return;
-      }
-
-      currentProgress += delta * 0.35;
-      updateVisuals(currentProgress);
       rafId = requestAnimationFrame(frame);
     }
 
-    const onScroll = () => {
-      if (!trackRef.current || !sectionRef.current) return;
-      const rect = trackRef.current.getBoundingClientRect();
-      const viewportH = window.innerHeight;
-      const totalScroll = trackRef.current.offsetHeight - viewportH;
-      if (totalScroll <= 0) return;
-
-      const scrolled = -rect.top;
-      const p = clamp(scrolled / totalScroll, 0, 1);
-      targetProgress = p;
-      wakeUpLoop();
-
-      // Robust 3-Phase Pinning:
-      // Phase 1 (scrolled <= 0): Absolute at top of track
-      // Phase 2 (0 < scrolled < totalScroll): Fixed to viewport, scrubbing 0% -> 100%
-      // Phase 3 (scrolled >= totalScroll): Absolute at bottom of track, scrolling naturally into marketplace
-      if (scrolled <= 0) {
-        sectionRef.current.style.position = 'absolute';
-        sectionRef.current.style.top = '0px';
-        sectionRef.current.style.bottom = 'auto';
-        sectionRef.current.style.left = '0px';
-        sectionRef.current.style.width = '100%';
-      } else if (scrolled < totalScroll) {
-        sectionRef.current.style.position = 'fixed';
-        sectionRef.current.style.top = '0px';
-        sectionRef.current.style.bottom = 'auto';
-        sectionRef.current.style.left = '0px';
-        sectionRef.current.style.width = '100%';
-      } else {
-        sectionRef.current.style.position = 'absolute';
-        sectionRef.current.style.top = 'auto';
-        sectionRef.current.style.bottom = '0px';
-        sectionRef.current.style.left = '0px';
-        sectionRef.current.style.width = '100%';
-      }
-
-      if (p >= 0.98 && onScrubComplete) {
-        onScrubComplete();
-      }
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    onScroll();
+    if (!reduceMotion) {
+      rafId = requestAnimationFrame(frame);
+    }
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      section.removeEventListener('touchstart', onTouchStart, true);
+      section.removeEventListener('touchmove', onTouchMove, true);
+      window.removeEventListener('scroll', onWindowScroll);
       cancelAnimationFrame(rafId);
+      releaseLock();
     };
   }, [scrubDistance, onScrubComplete]);
 
   return (
-    /* Scroll track — provides smooth 0% to 100% scrub distance */
     <div
-      ref={trackRef}
+      ref={sectionRef}
+      className={className}
       style={{
         position: 'relative',
+        height: '100dvh',
+        minHeight: '560px',
         width: '100%',
-        height: '240vh',
+        overflow: 'hidden',
         background: COL_BG,
+        touchAction: 'none',
+        ...style,
       }}
     >
-      {/* Pinned panel — stays fixed to viewport while user scrubs 0% to 100% */}
-      <div
-        ref={sectionRef}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100vh',
-          minHeight: '560px',
-          overflow: 'hidden',
-          background: COL_BG,
-          touchAction: 'pan-y',
-          userSelect: 'none',
-          zIndex: 20,
-          ...(style || {}),
-        }}
-        className={className || ''}
-      >
       <img
         ref={imageRef}
         src={finalImage}
@@ -1061,7 +1103,6 @@ export function FarmHero({
           </a>
         </span>
       )}
-      </div>
     </div>
   );
 }
