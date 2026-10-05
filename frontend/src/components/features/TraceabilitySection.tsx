@@ -26,7 +26,7 @@ interface TraceabilitySectionProps {
 export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
   activeBatchId = 'F2S-TM-20260920-01',
 }) => {
-  const { batches } = useFarm();
+  const { batches, setSelectedBatchId } = useFarm();
   const [searchId, setSearchId] = useState<string>(activeBatchId);
   const [currentBatch, setCurrentBatch] = useState<TraceabilityBatch>(() => {
     return batches[activeBatchId] || Object.values(batches)[0];
@@ -91,23 +91,27 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
   const handleLookup = (id: string) => {
     const cleanId = id.trim().replace(/\s+/g, '-');
     setSearchId(cleanId);
-    setIsVerifying(true);
 
+    const found =
+      batches[cleanId] ||
+      Object.values(batches).find(
+        (b) =>
+          b.batchId.toLowerCase() === cleanId.toLowerCase() ||
+          b.produceName.toLowerCase().includes(cleanId.toLowerCase())
+      );
+
+    if (found) {
+      setCurrentBatch(found);
+      setSelectedBatchId?.(found.batchId);
+    }
+
+    setIsVerifying(true);
     setTimeout(() => {
       setIsVerifying(false);
-      if (batches[cleanId]) {
-        setCurrentBatch(batches[cleanId]);
-      } else {
-        const matched = Object.values(batches).find(
-          (b) =>
-            b.batchId.toLowerCase() === cleanId.toLowerCase() ||
-            b.produceName.toLowerCase().includes(cleanId.toLowerCase())
-        );
-        if (matched) {
-          setCurrentBatch(matched);
-        }
+      if (found) {
+        setCurrentBatch(found);
       }
-    }, 400);
+    }, 300);
   };
 
   const qrPayload = `https://farm2street.in/trace/${currentBatch.batchId}`;
@@ -153,7 +157,7 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
                 key={chip.id}
                 type="button"
                 onClick={() => handleLookup(chip.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold transition-all ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                   currentBatch.batchId === chip.id
                     ? 'bg-[#c5a880] text-[#07100b] shadow-md scale-105 ring-2 ring-[#c5a880]/40'
                     : 'bg-white/10 text-stone-300 hover:bg-white/20'
@@ -172,6 +176,11 @@ export const TraceabilitySection: React.FC<TraceabilitySectionProps> = ({
               type="text"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleLookup(searchId);
+                }
+              }}
               placeholder="Enter Batch ID (e.g. F2S-TM-20260920-01)"
               className="flex-1 bg-transparent text-xs text-white placeholder-stone-400 focus:outline-none px-2 font-mono"
             />

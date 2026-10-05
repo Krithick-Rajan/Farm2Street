@@ -101,27 +101,6 @@ export const INITIAL_PRODUCE: Produce[] = [
 
 export const SUBSCRIPTION_BOXES: SubscriptionBox[] = [
   {
-    id: 'box-0',
-    name: 'Farm Fresh Trial Box',
-    tagline: 'Experience zero-middleman harvest with a curated trial crate',
-    pricePerWeek: 0,
-    weightApprox: '1.5 - 2.0 kg',
-    suitableFor: 'New Households',
-    tierCategory: 'personal',
-    itemsIncluded: [
-      'Morning Heirloom Tomatoes (500 g)',
-      'Crisp Spinach Bunch (1 bunch)',
-      'Farm Carrot Trio (250 g)',
-      'Herbal Tea & Fresh Mint Sprig',
-      'Field-to-Door Quality Guarantee'
-    ],
-    features: [
-      'Zero delivery charge on introductory trial drop',
-      'Immutable batch QR provenance tag on crate',
-      'No commitment — pause, skip, or cancel anytime'
-    ],
-  },
-  {
     id: 'box-1',
     name: 'Starter Green Box',
     tagline: 'Ideal for singles and couples seeking daily crisp greens & morning essentials',
@@ -192,7 +171,7 @@ export const SUBSCRIPTION_BOXES: SubscriptionBox[] = [
 export const TRACEABILITY_MOCK: Record<string, TraceabilityBatch> = {
   'F2S-TM-20260920-01': {
     batchId: 'F2S-TM-20260920-01',
-    produceName: 'Tomatoes',
+    produceName: 'Heirloom Tomatoes',
     farmName: 'Green Valley Organic Farms',
     farmerName: 'Ramesh Patel',
     location: 'Sector 4, Certified Organic Agro-Belt',
@@ -233,6 +212,236 @@ export const TRACEABILITY_MOCK: Record<string, TraceabilityBatch> = {
         timestamp: '2026-09-20 12:30 PM',
         location: 'Customer Doorstep',
         details: 'Direct transfer within 6 hours of morning harvest.'
+      }
+    ]
+  },
+  'F2S-BP-20260920-05': {
+    batchId: 'F2S-BP-20260920-05',
+    produceName: 'Bell Peppers',
+    farmName: 'Green Valley Farm',
+    farmerName: 'Ramesh Patel',
+    location: 'Aerated Polyhouse Hub (16 km)',
+    fieldId: 'Polyhouse-B2 (Controlled Climate)',
+    harvestDate: '2026-09-20 06:30 AM',
+    packingDate: '2026-09-20 08:45 AM',
+    qualityGrade: 'Grade A Crisp',
+    pesticideFree: true,
+    soilHealthIndex: 'Nutrient Rich (pH 6.5, Carbon 0.79%)',
+    temperatureAtTransit: '14°C (Chilled Electric Transit)',
+    timeline: [
+      {
+        stage: 'Harvested',
+        timestamp: '2026-09-20 06:30 AM',
+        location: 'Green Valley Polyhouse',
+        details: 'Hand-clipped with stems intact to retain maximum juiciness and crispness.'
+      },
+      {
+        stage: 'Quality Checked',
+        timestamp: '2026-09-20 07:30 AM',
+        location: 'On-farm Sorting Bay',
+        details: 'Wall thickness measured (>6mm), skin blemish scan passed with zero residue.'
+      },
+      {
+        stage: 'Packed',
+        timestamp: '2026-09-20 08:45 AM',
+        location: 'Farm2Street Micro-Hub #2',
+        details: 'Packed in breathable micro-perforated vegetable cartons.'
+      },
+      {
+        stage: 'Dispatched',
+        timestamp: '2026-09-20 10:00 AM',
+        location: 'Transit to Hub',
+        details: 'Loaded in climate-controlled EV Cargo Van #EV-18.'
+      },
+      {
+        stage: 'Delivered',
+        timestamp: '2026-09-20 01:15 PM',
+        location: 'Customer Doorstep',
+        details: 'Delivered crisp and farm-fresh within hours of morning clip.'
+      }
+    ]
+  },
+  'F2S-CR-20260919-02': {
+    batchId: 'F2S-CR-20260919-02',
+    produceName: 'Organic Carrots',
+    farmName: 'Sunrise Fields',
+    farmerName: 'Anandi Devi',
+    location: 'Highland Root Farm (25 km)',
+    fieldId: 'Highland-Root-Plot-07',
+    harvestDate: '2026-09-19 04:00 PM',
+    packingDate: '2026-09-19 06:15 PM',
+    qualityGrade: 'Select Sweet Grade',
+    pesticideFree: true,
+    soilHealthIndex: 'Deep Loam (Organic Carbon 0.88%)',
+    temperatureAtTransit: '16°C (Ventilated Crates)',
+    timeline: [
+      {
+        stage: 'Harvested',
+        timestamp: '2026-09-19 04:00 PM',
+        location: 'Sunrise Highland Terraces',
+        details: 'Gentle root lifting from loose sandy-loam soil during cool twilight.'
+      },
+      {
+        stage: 'Washed & Checked',
+        timestamp: '2026-09-19 05:00 PM',
+        location: 'Farm Springhouse',
+        details: 'Triple-washed in chemical-free filtered natural spring water.'
+      },
+      {
+        stage: 'Packed',
+        timestamp: '2026-09-19 06:15 PM',
+        location: 'Highland Dispatch Center',
+        details: 'Bundled with intact micro-greens in damp jute wraps.'
+      },
+      {
+        stage: 'Dispatched',
+        timestamp: '2026-09-20 05:30 AM',
+        location: 'Early Express Line',
+        details: 'Direct morning sprint via Electric Cargo Transit #EV-09.'
+      },
+      {
+        stage: 'Delivered',
+        timestamp: '2026-09-20 09:00 AM',
+        location: 'Customer Doorstep',
+        details: 'Unmatched crunch and natural sweetness preserved straight from Highland soils.'
+      }
+    ]
+  },
+  'F2S-SP-20260920-04': {
+    batchId: 'F2S-SP-20260920-04',
+    produceName: 'Malabar Spinach',
+    farmName: 'Greenfield Harvest Cluster',
+    farmerName: 'Kavitha Murugan',
+    location: 'Greenfield Harvest Cluster (12 km)',
+    fieldId: 'Wetland-Beds-East-01',
+    harvestDate: '2026-09-20 05:30 AM',
+    packingDate: '2026-09-20 07:00 AM',
+    qualityGrade: 'Tender Leaf A+',
+    pesticideFree: true,
+    soilHealthIndex: 'Bio-compost Active (Nitrogen Optimal)',
+    temperatureAtTransit: '12°C (Humidified Chilled Crates)',
+    timeline: [
+      {
+        stage: 'Harvested',
+        timestamp: '2026-09-20 05:30 AM',
+        location: 'Greenfield Canopy Beds',
+        details: 'Delicate morning dew harvesting of succulent broad leaves.'
+      },
+      {
+        stage: 'Quality Checked',
+        timestamp: '2026-09-20 06:15 AM',
+        location: 'Cold Wash Station',
+        details: 'Hydro-cooled with chilled mist to seal nutrients and lock crispness.'
+      },
+      {
+        stage: 'Packed',
+        timestamp: '2026-09-20 07:00 AM',
+        location: 'Cluster Packhouse',
+        details: 'Tied with natural plant fiber twine in eco-friendly protective sleeves.'
+      },
+      {
+        stage: 'Dispatched',
+        timestamp: '2026-09-20 08:00 AM',
+        location: 'Priority Greens Route',
+        details: 'Rapid transit via chilled electric cargo bike fleet.'
+      },
+      {
+        stage: 'Delivered',
+        timestamp: '2026-09-20 10:45 AM',
+        location: 'Customer Doorstep',
+        details: 'Arrived crisp and vibrant, zero wilting guaranteed.'
+      }
+    ]
+  },
+  'F2S-GB-20260920-03': {
+    batchId: 'F2S-GB-20260920-03',
+    produceName: 'Green Beans',
+    farmName: 'Meadow Roots',
+    farmerName: 'Balwinder Singh',
+    location: 'Riverbank Agro Beds (22 km)',
+    fieldId: 'Meadow-East-12',
+    harvestDate: '2026-09-20 06:15 AM',
+    packingDate: '2026-09-20 08:00 AM',
+    qualityGrade: 'A Grade Tender',
+    pesticideFree: true,
+    soilHealthIndex: 'Loam Alluvial (High Potassium)',
+    temperatureAtTransit: '15°C (Chilled Crates)',
+    timeline: [
+      {
+        stage: 'Harvested',
+        timestamp: '2026-09-20 06:15 AM',
+        location: 'Riverbank Agro Beds',
+        details: 'Hand-picked crisp morning bean pods without bruising.'
+      },
+      {
+        stage: 'Quality Checked',
+        timestamp: '2026-09-20 07:15 AM',
+        location: 'Field Pack Station',
+        details: 'Snapped test for tenderness; zero fiber strings.'
+      },
+      {
+        stage: 'Packed',
+        timestamp: '2026-09-20 08:00 AM',
+        location: 'Farm2Street Micro-Hub #1',
+        details: 'Packed in breathable cotton mesh pouches.'
+      },
+      {
+        stage: 'Dispatched',
+        timestamp: '2026-09-20 09:15 AM',
+        location: 'Transit Line',
+        details: 'Transferred via solar-assisted express courier.'
+      },
+      {
+        stage: 'Delivered',
+        timestamp: '2026-09-20 11:50 AM',
+        location: 'Customer Doorstep',
+        details: 'Delivered ready to cook with garden snap.'
+      }
+    ]
+  },
+  'F2S-MR-20260920-08': {
+    batchId: 'F2S-MR-20260920-08',
+    produceName: 'Wild Mushrooms',
+    farmName: 'ShroomCraft BioFarm',
+    farmerName: 'Dr. Priya Sen',
+    location: 'Forest Shade BioFarm (30 km)',
+    fieldId: 'Climate-Vault-04',
+    harvestDate: '2026-09-20 07:00 AM',
+    packingDate: '2026-09-20 08:15 AM',
+    qualityGrade: 'Gourmet Organic',
+    pesticideFree: true,
+    soilHealthIndex: 'Sterilized Organic Straw Substrate',
+    temperatureAtTransit: '8°C (Refrigerated Transit)',
+    timeline: [
+      {
+        stage: 'Harvested',
+        timestamp: '2026-09-20 07:00 AM',
+        location: 'Mushroom Bio-Chambers',
+        details: 'Carefully trimmed clusters at prime cap bloom.'
+      },
+      {
+        stage: 'Quality Checked',
+        timestamp: '2026-09-20 07:45 AM',
+        location: 'Cleanroom Sorting',
+        details: 'Spore density & cap firmness verified under UV inspection.'
+      },
+      {
+        stage: 'Packed',
+        timestamp: '2026-09-20 08:15 AM',
+        location: 'Clean-Pack Pod',
+        details: 'Vented compostable paper-punnet packaging.'
+      },
+      {
+        stage: 'Dispatched',
+        timestamp: '2026-09-20 09:00 AM',
+        location: 'Cold Chain Route',
+        details: 'Dispatched inside 8°C chilled carrier box.'
+      },
+      {
+        stage: 'Delivered',
+        timestamp: '2026-09-20 11:30 AM',
+        location: 'Customer Doorstep',
+        details: 'Arrived firm and fragrant with woodsy aroma.'
       }
     ]
   }
