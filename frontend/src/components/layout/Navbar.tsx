@@ -249,12 +249,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 whitespace-nowrap">
           {onOpenTracker && (
             <button
               type="button"
               onClick={onOpenTracker}
-              className="flex items-center gap-1.5 h-9 sm:h-10 rounded-full border border-stone-200/90 bg-white px-2.5 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:bg-stone-50 hover:border-stone-300 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+              className="flex items-center justify-center gap-1.5 h-8.5 w-8.5 sm:w-auto sm:h-10 rounded-full border border-stone-200/90 bg-white p-0 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:bg-stone-50 hover:border-stone-300 transition-all shrink-0 whitespace-nowrap cursor-pointer"
               title="Track Orders"
             >
               <Package className="h-4 w-4 text-[#183c2a]" />
@@ -269,7 +269,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenLoginModal}
-              className="flex items-center gap-1.5 h-9 sm:h-10 rounded-full border border-[#183c2a] bg-[#183c2a] hover:bg-[#225037] text-white px-3 sm:px-4 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
+              className="flex items-center gap-1.5 h-8.5 sm:h-10 rounded-full border border-[#183c2a] bg-[#183c2a] hover:bg-[#225037] text-white px-2.5 sm:px-4 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
               title="Sign In / Switch Actor Portal"
             >
               <User className="h-3.5 w-3.5 text-[#c5a880]" />
@@ -280,7 +280,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={onOpenLoginModal}
-                className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-full border border-stone-200 bg-white px-2.5 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+                className="flex items-center gap-1 sm:gap-2 h-8.5 sm:h-10 rounded-full border border-stone-200 bg-white px-2 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
                 title="Click to Switch Actor Login (Farmer, Delivery, Admin, Customer)"
               >
                 <div className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#183c2a]/10 text-[#183c2a]">
@@ -292,14 +292,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden 2xl:inline">
                   {currentUser.role}
                 </span>
-                <ChevronDown className="h-3 w-3 text-stone-400 shrink-0" />
+                <ChevronDown className="h-3 w-3 text-stone-400 shrink-0 hidden xs:inline" />
               </button>
 
               {onLogout && (
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="flex items-center gap-1.5 h-9 sm:h-10 rounded-full border border-rose-200/80 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 px-2.5 sm:px-3 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 h-8.5 w-8.5 sm:w-auto sm:h-10 rounded-full border border-rose-200/80 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 p-0 sm:px-3 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
                   title={`Sign out (${currentUser.name})`}
                 >
                   <LogOut className="h-3.5 w-3.5 text-rose-600" />
@@ -313,12 +313,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={onOpenCart}
             aria-label="View Shopping Cart"
-            className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-full bg-[#183c2a] px-3 sm:px-3.5 text-xs font-bold text-white shadow-sm hover:bg-[#214d36] active:scale-95 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+            className="flex items-center gap-1.5 sm:gap-2 h-8.5 sm:h-10 rounded-full bg-[#183c2a] px-2.5 sm:px-3.5 text-xs font-bold text-white shadow-sm hover:bg-[#214d36] active:scale-95 transition-all shrink-0 whitespace-nowrap cursor-pointer"
           >
             <ShoppingBag className="h-4 w-4 text-[#c5a880]" />
             <span className="hidden sm:inline">Basket</span>
             {cartCount > 0 && (
-              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#c5a880] px-1.5 text-[11px] font-extrabold text-[#07100b]">
+              <span className="flex h-4.5 min-w-[18px] sm:h-5 sm:min-w-[20px] items-center justify-center rounded-full bg-[#c5a880] px-1 text-[10px] font-black text-[#07100b]">
                 {cartCount}
               </span>
             )}

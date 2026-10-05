@@ -363,6 +363,8 @@ export function FarmHero({
     let lockedScrollY = 0;
     let touchStartY = 0;
 
+    let isRunning = false;
+
     function engageLock() {
       if (locked || typeof document === 'undefined') return;
       locked = true;
@@ -398,6 +400,73 @@ export function FarmHero({
       engageLock();
     }
 
+    function wakeUpLoop() {
+      if (!isRunning && !reduceMotion) {
+        isRunning = true;
+        rafId = requestAnimationFrame(frame);
+      }
+    }
+
+    function updateVisuals(p: number) {
+      if (imageRef.current) {
+        const scale = 1 + p * 0.06;
+        imageRef.current.style.transform = `scale(${scale})`;
+      }
+
+      if (titleRef.current) {
+        const t = 1 - clamp(p / 0.35, 0, 1);
+        titleRef.current.style.opacity = String(t);
+        titleRef.current.style.transform = `translateY(${(1 - t) * -24}px) scale(${0.96 + t * 0.04})`;
+        titleRef.current.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
+      }
+
+      if (waypointRef.current) {
+        let midOpacity = 0;
+        if (p >= 0.26 && p <= 0.72) {
+          if (p < 0.48) {
+            midOpacity = (p - 0.26) / 0.22;
+          } else {
+            midOpacity = (0.72 - p) / 0.24;
+          }
+        }
+        waypointRef.current.style.opacity = String(clamp(midOpacity, 0, 1));
+        waypointRef.current.style.transform = `translateY(${(1 - midOpacity) * 12}px) scale(${0.96 + midOpacity * 0.04})`;
+      }
+
+      if (hintRef.current) {
+        hintRef.current.style.opacity = hasStartedScrolling ? '0' : '1';
+      }
+
+      if (taglineRef.current) {
+        const t = clamp((p - 0.65) / 0.35, 0, 1);
+        taglineRef.current.style.opacity = String(t);
+        taglineRef.current.style.transform = `translateY(${(1 - t) * 16}px) scale(${0.96 + t * 0.04})`;
+        taglineRef.current.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
+      }
+
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${p})`;
+      }
+      if (progressTextRef.current) {
+        const pct = Math.round(p * 100);
+        progressTextRef.current.textContent = `${pct}% HARVEST JOURNEY`;
+      }
+    }
+
+    function frame() {
+      const delta = targetProgress - currentProgress;
+      if (Math.abs(delta) < 0.0005) {
+        currentProgress = targetProgress;
+        updateVisuals(currentProgress);
+        isRunning = false;
+        return;
+      }
+
+      currentProgress += delta * 0.38;
+      updateVisuals(currentProgress);
+      rafId = requestAnimationFrame(frame);
+    }
+
     function addDelta(deltaY: number) {
       if (targetProgress >= 0.98 && deltaY > 0) {
         releaseLock();
@@ -419,6 +488,7 @@ export function FarmHero({
       const next = clamp(targetProgress + deltaY / scrubDistance, 0, 1);
       targetProgress = next;
       if (targetProgress > 0.001) hasStartedScrolling = true;
+      wakeUpLoop();
       return true;
     }
 
@@ -428,6 +498,7 @@ export function FarmHero({
           engageLock();
           targetProgress = 1;
           currentProgress = 1;
+          wakeUpLoop();
         }
         return;
       }
@@ -450,6 +521,7 @@ export function FarmHero({
           engageLock();
           targetProgress = 1;
           currentProgress = 1;
+          wakeUpLoop();
         }
         return;
       }
@@ -472,61 +544,7 @@ export function FarmHero({
     };
     window.addEventListener('scroll', onWindowScroll, { passive: true });
 
-    function frame() {
-      currentProgress += (targetProgress - currentProgress) * 0.18;
-
-      if (imageRef.current) {
-        const scale = 1 + currentProgress * 0.08;
-        imageRef.current.style.transform = `scale(${scale})`;
-      }
-
-      if (titleRef.current) {
-        const t = 1 - clamp(currentProgress / 0.35, 0, 1);
-        titleRef.current.style.opacity = String(t);
-        titleRef.current.style.transform = `translateY(${(1 - t) * -28}px) scale(${0.95 + t * 0.05})`;
-        titleRef.current.style.filter = `blur(${(1 - t) * 10}px)`;
-        titleRef.current.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
-      }
-
-      if (waypointRef.current) {
-        let midOpacity = 0;
-        if (currentProgress >= 0.26 && currentProgress <= 0.72) {
-          if (currentProgress < 0.48) {
-            midOpacity = (currentProgress - 0.26) / 0.22;
-          } else {
-            midOpacity = (0.72 - currentProgress) / 0.24;
-          }
-        }
-        waypointRef.current.style.opacity = String(clamp(midOpacity, 0, 1));
-        waypointRef.current.style.transform = `translateY(${(1 - midOpacity) * 14}px) scale(${0.96 + midOpacity * 0.04})`;
-      }
-
-      if (hintRef.current) {
-        hintRef.current.style.opacity = hasStartedScrolling ? '0' : '1';
-      }
-
-      if (taglineRef.current) {
-        const t = clamp((currentProgress - 0.65) / 0.35, 0, 1);
-        taglineRef.current.style.opacity = String(t);
-        taglineRef.current.style.transform = `translateY(${(1 - t) * 20}px) scale(${0.96 + t * 0.04})`;
-        taglineRef.current.style.filter = `blur(${(1 - t) * 8}px)`;
-        taglineRef.current.style.pointerEvents = t > 0.5 ? 'auto' : 'none';
-      }
-
-      if (progressBarRef.current) {
-        progressBarRef.current.style.transform = `scaleX(${currentProgress})`;
-      }
-      if (progressTextRef.current) {
-        const pct = Math.round(currentProgress * 100);
-        progressTextRef.current.textContent = `${pct}% HARVEST JOURNEY`;
-      }
-
-      rafId = requestAnimationFrame(frame);
-    }
-
-    if (!reduceMotion) {
-      rafId = requestAnimationFrame(frame);
-    }
+    wakeUpLoop();
 
     return () => {
       window.removeEventListener('wheel', onWheel);

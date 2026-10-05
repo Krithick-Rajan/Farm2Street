@@ -200,7 +200,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
            LEFT — FARM VISUAL & CANVAS EXPERIENCE
       ====================================================== */}
       <section
-        className="relative min-h-[320px] sm:min-h-[420px] lg:min-h-screen overflow-hidden isolate"
+        className="hidden lg:block relative lg:min-h-screen overflow-hidden isolate"
         style={{
           background: 'linear-gradient(180deg, #173f29 0%, #204f31 38%, #315f38 58%, #405f3d 72%, #705238 100%)',
         }}
