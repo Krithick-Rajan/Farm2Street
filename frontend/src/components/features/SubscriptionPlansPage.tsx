@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Check,
   Calendar,
@@ -41,10 +41,27 @@ export const SubscriptionPlansPage: React.FC<SubscriptionPlansPageProps> = ({
     subscriptions,
     toggleSubscription,
     addSubscription,
+    setIsLoginModalOpen,
   } = useFarm();
 
   const [frequency, setFrequency] = useState<'weekly' | 'biweekly'>('weekly');
   const [subscribedId, setSubscribedId] = useState<string | null>(null);
+  const [pendingBox, setPendingBox] = useState<SubscriptionBox | null>(null);
+
+  const isGuest = currentUser.id === 'guest' || currentUser.name === 'Guest User' || !currentUser.emailOrPhone;
+
+  useEffect(() => {
+    if (pendingBox && !isGuest) {
+      const box = pendingBox;
+      setPendingBox(null);
+      if (onSubscribe) {
+        onSubscribe(box, frequency);
+      }
+      addSubscription(box, frequency);
+      setSubscribedId(box.id);
+      setTimeout(() => setSubscribedId(null), 2500);
+    }
+  }, [pendingBox, isGuest, onSubscribe, frequency, addSubscription]);
 
   // Admin Customization Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -135,6 +152,11 @@ export const SubscriptionPlansPage: React.FC<SubscriptionPlansPageProps> = ({
   };
 
   const handleSubscribe = (box: SubscriptionBox) => {
+    if (isGuest) {
+      setPendingBox(box);
+      setIsLoginModalOpen(true);
+      return;
+    }
     if (onSubscribe) {
       onSubscribe(box, frequency);
     }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Trash2,
@@ -19,6 +19,8 @@ import {
   Truck,
   Sparkles,
   Package,
+  User,
+  LogIn,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { CartItem, DeliveryStatus, Order } from '../../types';
@@ -110,8 +112,19 @@ export const RazorpayModal: React.FC<RazorpayModalProps> = ({
       <div className="relative z-50 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl border border-stone-200">
         <div className="bg-[#183c2a] px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 font-black text-white text-xs shadow-sm">
-              R
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 shadow-sm border border-emerald-500/30 shrink-0">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4.5 w-4.5"
+              >
+                <path d="M12 21c0-7 3-11 9-14-1 7-4 12-9 14Z" />
+                <path d="M12 21c0-6-2-10-7-13 0 6 2 11 7 13Z" />
+              </svg>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -328,10 +341,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onClearCart,
   onOpenTracker,
 }) => {
-  const { placeOrder, setActiveTrackOrderId, currentUser } = useFarm();
+  const { placeOrder, setActiveTrackOrderId, currentUser, setIsLoginModalOpen } = useFarm();
   const [address, setAddress] = useState(currentUser.location || '');
   const [isRazorpayOpen, setIsRazorpayOpen] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState<string | null>(null);
+  const [pendingCheckoutAfterLogin, setPendingCheckoutAfterLogin] = useState(false);
+
+  const isGuest = currentUser.id === 'guest' || currentUser.name === 'Guest User' || !currentUser.emailOrPhone;
+
+  useEffect(() => {
+    if (currentUser.location && !address) {
+      setAddress(currentUser.location);
+    }
+  }, [currentUser.location]);
+
+  useEffect(() => {
+    if (pendingCheckoutAfterLogin && !isGuest) {
+      setPendingCheckoutAfterLogin(false);
+      setIsRazorpayOpen(true);
+    }
+  }, [pendingCheckoutAfterLogin, isGuest]);
 
   if (!isOpen) return null;
 
@@ -340,6 +369,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const total = subtotal + deliveryFee;
 
   const handleStartCheckout = () => {
+    if (isGuest) {
+      setPendingCheckoutAfterLogin(true);
+      setIsLoginModalOpen(true);
+      return;
+    }
     setIsRazorpayOpen(true);
   };
 
@@ -544,14 +578,31 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   </div>
                 </div>
 
+                {isGuest && (
+                  <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 shadow-2xs">
+                    <User className="h-4 w-4 text-amber-700 shrink-0" />
+                    <span>Please sign in or create an account to complete your fresh harvest order.</span>
+                  </div>
+                )}
+
                 <button
                   type="button"
                   onClick={handleStartCheckout}
-                  className="w-full flex items-center justify-center gap-2 rounded-full bg-[#183c2a] py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:bg-[#2c5b3d] active:scale-95 transition-all"
+                  className="w-full flex items-center justify-center gap-2 rounded-full bg-[#183c2a] py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:bg-[#2c5b3d] active:scale-95 transition-all cursor-pointer"
                 >
-                  <ShieldCheck className="h-4 w-4 text-[#c5a880]" />
-                  <span>Checkout via Razorpay (₹{total})</span>
-                  <ArrowRight className="h-4 w-4" />
+                  {isGuest ? (
+                    <>
+                      <LogIn className="h-4 w-4 text-[#c5a880]" />
+                      <span>Sign In to Continue Purchase (₹{total})</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="h-4 w-4 text-[#c5a880]" />
+                      <span>Checkout via Razorpay (₹{total})</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
                 </button>
               </div>
             </>

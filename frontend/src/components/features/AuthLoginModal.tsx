@@ -149,7 +149,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
   const Icon = currentMeta.icon;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-5">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
