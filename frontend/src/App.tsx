@@ -190,8 +190,8 @@ function AppContent() {
             scrubDistance={2400}
           />
 
-          {/* All post-hero content gets navbar offset */}
-          <div className="pt-[68px] sm:pt-[72px]">
+          {/* Post-hero marketplace content */}
+          <div>
             {/* Fresh Harvests Produce Section */}
             <FreshHarvests
               produceList={produceList}

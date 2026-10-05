@@ -298,7 +298,7 @@ export interface FarmHeroProps {
   onScrubComplete?: () => void;
 }
 
-const DEFAULT_IMAGE = './images/hero-wheat.jpg';
+const DEFAULT_IMAGE = '/images/hero-wheat.jpg';
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1920&q=85';
 const DEFAULT_SIGNATURE = { name: 'Farm2Street.in', url: '#marketplace' };
@@ -344,13 +344,14 @@ export function FarmHero({
       const top = trackRef.current.offsetTop + trackRef.current.offsetHeight;
       window.scrollTo({ top, behavior: 'smooth' });
     } else {
-      window.scrollTo({ top: window.innerHeight * 1.5, behavior: 'smooth' });
+      window.scrollTo({ top: window.innerHeight * 2.5, behavior: 'smooth' });
     }
   };
 
   useEffect(() => {
     const track = trackRef.current;
-    if (!track) return;
+    const section = sectionRef.current;
+    if (!track || !section) return;
 
     const reduceMotion =
       typeof window !== 'undefined' &&
@@ -425,19 +426,47 @@ export function FarmHero({
         return;
       }
 
-      currentProgress += delta * 0.25;
+      currentProgress += delta * 0.35;
       updateVisuals(currentProgress);
       rafId = requestAnimationFrame(frame);
     }
 
     const onScroll = () => {
-      if (!trackRef.current) return;
+      if (!trackRef.current || !sectionRef.current) return;
       const rect = trackRef.current.getBoundingClientRect();
-      const totalScroll = trackRef.current.offsetHeight - window.innerHeight;
+      const viewportH = window.innerHeight;
+      const totalScroll = trackRef.current.offsetHeight - viewportH;
       if (totalScroll <= 0) return;
-      const p = clamp(-rect.top / totalScroll, 0, 1);
+
+      const scrolled = -rect.top;
+      const p = clamp(scrolled / totalScroll, 0, 1);
       targetProgress = p;
       wakeUpLoop();
+
+      // Robust 3-Phase Pinning:
+      // Phase 1 (scrolled <= 0): Absolute at top of track
+      // Phase 2 (0 < scrolled < totalScroll): Fixed to viewport, scrubbing 0% -> 100%
+      // Phase 3 (scrolled >= totalScroll): Absolute at bottom of track, scrolling naturally into marketplace
+      if (scrolled <= 0) {
+        sectionRef.current.style.position = 'absolute';
+        sectionRef.current.style.top = '0px';
+        sectionRef.current.style.bottom = 'auto';
+        sectionRef.current.style.left = '0px';
+        sectionRef.current.style.width = '100%';
+      } else if (scrolled < totalScroll) {
+        sectionRef.current.style.position = 'fixed';
+        sectionRef.current.style.top = '0px';
+        sectionRef.current.style.bottom = 'auto';
+        sectionRef.current.style.left = '0px';
+        sectionRef.current.style.width = '100%';
+      } else {
+        sectionRef.current.style.position = 'absolute';
+        sectionRef.current.style.top = 'auto';
+        sectionRef.current.style.bottom = '0px';
+        sectionRef.current.style.left = '0px';
+        sectionRef.current.style.width = '100%';
+      }
+
       if (p >= 0.98 && onScrubComplete) {
         onScrubComplete();
       }
@@ -455,29 +484,31 @@ export function FarmHero({
   }, [scrubDistance, onScrubComplete]);
 
   return (
-    /* Scroll track — tall enough for the full scrub sequence */
+    /* Scroll track — provides smooth 0% to 100% scrub distance */
     <div
       ref={trackRef}
       style={{
         position: 'relative',
         width: '100%',
-        height: '300vh',
+        height: '240vh',
         background: COL_BG,
       }}
     >
-      {/* Sticky panel — fills viewport minus the fixed navbar */}
+      {/* Pinned panel — stays fixed to viewport while user scrubs 0% to 100% */}
       <div
         ref={sectionRef}
         style={{
-          position: 'sticky',
+          position: 'absolute',
           top: 0,
-          height: '100vh',
-          minHeight: '580px',
+          left: 0,
           width: '100%',
+          height: '100vh',
+          minHeight: '560px',
           overflow: 'hidden',
           background: COL_BG,
           touchAction: 'pan-y',
           userSelect: 'none',
+          zIndex: 20,
           ...(style || {}),
         }}
         className={className || ''}

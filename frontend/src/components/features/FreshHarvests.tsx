@@ -32,7 +32,8 @@ export const FreshHarvests: React.FC<FreshHarvestsProps> = ({
   };
 
   return (
-    <section id="marketplace" className="max-w-[1440px] mx-auto px-5 md:px-[5vw] py-20">
+    <section id="marketplace" className="max-w-[1440px] mx-auto px-5 md:px-[5vw] py-20 relative scroll-mt-20">
+      <div id="fresh-harvests" className="absolute -top-20 left-0" />
       {/* Section Heading matching prototype */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-[34px] gap-4">
         <div>
