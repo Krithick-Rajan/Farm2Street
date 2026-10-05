@@ -594,16 +594,28 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#29352d] block mb-1.5">
-                    Platform Security Root Key
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-[#29352d] block">
+                      Platform Security Root Key
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setSecurityKey('FARM2STREET_ADMIN_2026')}
+                      className="text-[11px] text-emerald-700 hover:text-emerald-800 font-bold underline cursor-pointer"
+                    >
+                      Use Key: FARM2STREET_ADMIN_2026
+                    </button>
+                  </div>
                   <input
-                    type="password"
+                    type="text"
                     value={securityKey}
                     onChange={(e) => setSecurityKey(e.target.value)}
-                    placeholder="Platform security key"
-                    className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
+                    placeholder="FARM2STREET_ADMIN_2026"
+                    className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] font-mono outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b]"
                   />
+                  <p className="text-[11px] text-stone-500 mt-1">
+                    Enter <code className="text-emerald-700 font-bold font-mono">FARM2STREET_ADMIN_2026</code> to authorize SuperAdmin governance access.
+                  </p>
                 </div>
               </>
             )}
