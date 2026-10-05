@@ -396,7 +396,16 @@ export function FarmHero({
 
     releaseLockRef.current = releaseLock;
 
-    if (window.scrollY <= 10) {
+    const hasDirectAnchorOrScan =
+      typeof window !== 'undefined' &&
+      (window.location.search.includes('batch') ||
+        window.location.search.includes('trace') ||
+        window.location.search.includes('batchId') ||
+        window.location.hash === '#traceability' ||
+        window.location.hash === '#marketplace' ||
+        window.location.hash === '#fresh-harvests');
+
+    if (window.scrollY <= 10 && !hasDirectAnchorOrScan) {
       engageLock();
     }
 

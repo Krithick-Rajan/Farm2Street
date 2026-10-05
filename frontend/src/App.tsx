@@ -45,6 +45,8 @@ function AppContent() {
   // Active unfulfilled orders count
   const activeOrdersCount = orders.filter((o) => o.status !== 'Delivered').length;
 
+  const [autoOpenCert, setAutoOpenCert] = useState<boolean>(false);
+
   // Handle direct QR code scans / query params on app load (e.g. https://farm2street.onrender.com/?batch=...#traceability)
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -52,13 +54,14 @@ function AppContent() {
     const scannedBatch = params.get('batch') || params.get('trace') || params.get('batchId');
     if (scannedBatch) {
       setSelectedBatchId(scannedBatch);
+      setAutoOpenCert(true);
       setActiveView('marketplace');
       setTimeout(() => {
         const el = document.getElementById('traceability');
         if (el) {
           el.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 500);
+      }, 300);
     } else if (window.location.hash === '#traceability') {
       setActiveView('marketplace');
       setTimeout(() => {
@@ -66,7 +69,7 @@ function AppContent() {
         if (el) {
           el.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 500);
+      }, 300);
     }
   }, [setSelectedBatchId, setActiveView]);
 
@@ -228,7 +231,7 @@ function AppContent() {
             </section>
 
             {/* Produce Traceability Engine */}
-            <TraceabilitySection activeBatchId={selectedBatchId} />
+            <TraceabilitySection activeBatchId={selectedBatchId} autoOpenCert={autoOpenCert} />
 
             {/* Partner Micro-Farms Showcase */}
             <LocalFarms />

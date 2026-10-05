@@ -708,9 +708,9 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({
             </div>
 
             <div className="relative pt-2 pb-1">
-              <div className="absolute top-5 left-3 right-3 h-1 bg-stone-200 rounded-full -translate-y-1/2" />
+              <div className="absolute top-[22px] left-3 right-3 h-1 bg-stone-200 rounded-full -translate-y-1/2" />
               <div
-                className="absolute top-5 left-3 h-1 bg-emerald-600 rounded-full -translate-y-1/2 transition-all duration-500"
+                className="absolute top-[22px] left-3 h-1 bg-emerald-600 rounded-full -translate-y-1/2 transition-all duration-500"
                 style={{
                   width: `${(currentStageIndex / (STAGES.length - 1)) * 100}%`,
                 }}
