@@ -180,10 +180,9 @@ function AppContent() {
       )}
 
       {/* 4. Screen Views Based on Active Portal */}
-      {/* FarmHero lives OUTSIDE the padded wrapper so the sticky hero anchors cleanly at top-0 */}
       {activeView === 'marketplace' && (
         <main>
-          {/* Hero Video Scrub — no top-padding; fills viewport from under the fixed navbar */}
+          {/* Hero — sits at page top. The FarmHero component internally accounts for navbar height */}
           <FarmHero
             title="FROM FARM"
             tagline="TO STREET — Fresh harvests direct from nearby growers."
@@ -191,8 +190,8 @@ function AppContent() {
             scrubDistance={2400}
           />
 
-          {/* Rest of marketplace content with navbar offset */}
-          <div>
+          {/* All post-hero content gets navbar offset */}
+          <div className="pt-[68px] sm:pt-[72px]">
             {/* Fresh Harvests Produce Section */}
             <FreshHarvests
               produceList={produceList}

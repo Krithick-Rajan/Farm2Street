@@ -455,19 +455,32 @@ export function FarmHero({
   }, [scrubDistance, onScrubComplete]);
 
   return (
+    /* Scroll track — tall enough for the full scrub sequence */
     <div
       ref={trackRef}
-      className="relative w-full h-[calc(220vh+68px)] sm:h-[calc(250vh+72px)]"
-      style={{ background: COL_BG, marginTop: 0 }}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '300vh',
+        background: COL_BG,
+      }}
     >
+      {/* Sticky panel — fills viewport minus the fixed navbar */}
       <div
         ref={sectionRef}
-        className={`sticky top-[68px] sm:top-[72px] h-[calc(100svh-68px)] sm:h-[calc(100svh-72px)] min-h-[520px] w-full overflow-hidden select-none ${className || ''}`}
         style={{
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          minHeight: '580px',
+          width: '100%',
+          overflow: 'hidden',
           background: COL_BG,
           touchAction: 'pan-y',
-          ...style,
+          userSelect: 'none',
+          ...(style || {}),
         }}
+        className={className || ''}
       >
       <img
         ref={imageRef}
@@ -507,7 +520,7 @@ export function FarmHero({
       <div
         style={{
           position: 'absolute',
-          top: 'clamp(20px, 3vh, 36px)',
+          top: 'clamp(80px, 10vh, 108px)',
           left: 'clamp(20px, 4vw, 48px)',
           display: 'flex',
           alignItems: 'center',
@@ -536,7 +549,7 @@ export function FarmHero({
         onClick={unlockAndScroll}
         style={{
           position: 'absolute',
-          top: 'clamp(20px, 3vh, 36px)',
+          top: 'clamp(80px, 10vh, 108px)',
           right: 'clamp(20px, 4vw, 48px)',
           display: 'flex',
           alignItems: 'center',
