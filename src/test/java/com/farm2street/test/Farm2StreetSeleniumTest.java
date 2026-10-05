@@ -30,7 +30,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class Farm2StreetSeleniumTest {
 
     private WebDriver driver;
-    private final String BASE_URL = "http://localhost:8080/farm2street";
+    private static final String LOCAL_URL = "http://localhost:8080/farm2street";
+    private static final String LOCAL_ROOT = "http://localhost:8080";
+    private static final String CLOUD_URL = "https://farm2street.onrender.com";
+    private String baseUrl;
 
     static {
         silenceWarnings();
@@ -59,8 +62,8 @@ public class Farm2StreetSeleniumTest {
         try {
             URL url = URI.create(targetUrl).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setConnectTimeout(1500);
-            con.setReadTimeout(1500);
+            con.setConnectTimeout(2000);
+            con.setReadTimeout(2000);
             con.setRequestMethod("GET");
             int code = con.getResponseCode();
             return code >= 200 && code < 400;
@@ -71,9 +74,22 @@ public class Farm2StreetSeleniumTest {
 
     @BeforeEach
     public void setUp() {
-        // If Tomcat is offline, skip test gracefully so packaging succeeds unconditionally
-        Assumptions.assumeTrue(isServerRunning(BASE_URL),
-                "Tomcat server is offline at " + BASE_URL + " - skipping live browser test.");
+        // Auto-detect target: System property -> Localhost -> Live Cloud Deployment
+        String propUrl = System.getProperty("target.url");
+        if (propUrl != null && !propUrl.isBlank()) {
+            baseUrl = propUrl.trim();
+        } else if (isServerRunning(LOCAL_URL)) {
+            baseUrl = LOCAL_URL;
+        } else if (isServerRunning(LOCAL_ROOT)) {
+            baseUrl = LOCAL_ROOT;
+        } else if (isServerRunning(CLOUD_URL)) {
+            baseUrl = CLOUD_URL;
+        } else {
+            baseUrl = null;
+        }
+
+        Assumptions.assumeTrue(baseUrl != null,
+                "No live server reachable (checked localhost:8080 and cloud) - skipping live browser test.");
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new"); // Run in background for automated suites
@@ -104,7 +120,7 @@ public class Farm2StreetSeleniumTest {
     @DisplayName("TC01: Verify Platform Title & HTML5 Semantic Shell (Topic 1: HTML5, Topic 2: CSS3)")
     public void testHomePageTitleAndHeader() {
         if (driver == null) return;
-        driver.get(BASE_URL);
+        driver.get(baseUrl);
         String title = driver.getTitle();
         assertNotNull(title);
         assertTrue(title.contains("Farm2Street"), "Page title should contain Farm2Street branding");
@@ -117,7 +133,7 @@ public class Farm2StreetSeleniumTest {
     @DisplayName("TC02: Verify HTML5 Canvas & Interactive DOM Elements (Topic 1: HTML5 Canvas, Topic 3: JS)")
     public void testHtml5CanvasAndInteractiveElements() {
         if (driver == null) return;
-        driver.get(BASE_URL);
+        driver.get(baseUrl);
         WebElement body = driver.findElement(By.tagName("body"));
         assertNotNull(body, "Webpage body must be fully rendered");
     }
@@ -126,7 +142,7 @@ public class Farm2StreetSeleniumTest {
     @DisplayName("TC03: Verify Traceability XML Feed Structure (Topic 5: XML)")
     public void testXmlFeedEndpoint() {
         if (driver == null) return;
-        driver.get(BASE_URL + "/produce.xml");
+        driver.get(baseUrl + "/produce.xml");
         String pageSource = driver.getPageSource();
         assertTrue(pageSource.contains("harvestTraceabilityFeed") || pageSource.contains("batch"),
                 "XML feed must contain well-formed traceability markup");
@@ -137,7 +153,7 @@ public class Farm2StreetSeleniumTest {
     @DisplayName("TC04: Verify JSP Orders Log Rendering on Tomcat (Topic 6: JSP, Topic 11: Tomcat)")
     public void testJspOrdersPageRendering() {
         if (driver == null) return;
-        driver.get(BASE_URL + "/orders.jsp");
+        driver.get(baseUrl + "/orders.jsp");
         String pageSource = driver.getPageSource();
         assertTrue(pageSource.contains("Live Harvest Orders Log") || pageSource.contains("Order Code"),
                 "orders.jsp must render JSP header and table headers");
@@ -147,7 +163,7 @@ public class Farm2StreetSeleniumTest {
     @DisplayName("TC05: Verify JSP Produce Catalog Rendering & JDBC Integration (Topic 6: JSP, Topic 9: JDBC)")
     public void testJspCatalogPageRendering() {
         if (driver == null) return;
-        driver.get(BASE_URL + "/catalog.jsp");
+        driver.get(baseUrl + "/catalog.jsp");
         String pageSource = driver.getPageSource();
         assertTrue(pageSource.contains("Fresh Harvest Catalog") || pageSource.contains("Direct Farm Price"),
                 "catalog.jsp must render harvest items retrieved via JDBC");
@@ -157,7 +173,7 @@ public class Farm2StreetSeleniumTest {
     @DisplayName("TC06: Verify Browser Cookie Persistence & Lifecycle (Topic 13: Cookies)")
     public void testCookieManagement() {
         if (driver == null) return;
-        driver.get(BASE_URL);
+        driver.get(baseUrl);
 
         // Add a test cookie
         Cookie testCookie = new Cookie("farm2street_test_cookie", "active_farmer_session");
@@ -176,7 +192,7 @@ public class Farm2StreetSeleniumTest {
     @DisplayName("TC07: Verify Server Session Cookie Management (Topic 14: Sessions)")
     public void testSessionIdHandling() {
         if (driver == null) return;
-        driver.get(BASE_URL + "/orders.jsp");
+        driver.get(baseUrl + "/orders.jsp");
         // Check for JSESSIONID cookie presence in Tomcat session scope
         for (Cookie cookie : driver.manage().getCookies()) {
             if ("JSESSIONID".equalsIgnoreCase(cookie.getName())) {
@@ -190,7 +206,7 @@ public class Farm2StreetSeleniumTest {
     @DisplayName("TC08: Verify Jakarta Servlet REST Endpoint Response (Topic 7: Servlets, Topic 4: AJAX)")
     public void testProduceServletEndpoint() {
         if (driver == null) return;
-        driver.get(BASE_URL + "/api/produce");
+        driver.get(baseUrl + "/api/produce");
         String pageSource = driver.getPageSource();
         assertTrue(pageSource.contains("success") || pageSource.contains("price") || pageSource.contains("name"),
                 "Servlet must return JSON payload for produce catalog");
