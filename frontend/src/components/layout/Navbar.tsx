@@ -170,11 +170,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       style={{ backgroundColor: '#f5f4ee' }}
       className="fixed top-0 left-0 right-0 z-50 w-full bg-[#f5f4ee] border-b border-stone-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all"
     >
-      <div className="w-full flex h-[68px] sm:h-[72px] items-center justify-between px-3 sm:px-6 lg:px-10 gap-2 sm:gap-4">
+      <div className="w-full flex h-[68px] sm:h-[72px] items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 gap-2 sm:gap-3">
         {/* Left End: Menu Toggle & Brand Logo */}
         <div className="flex items-center shrink-0">
           {onOpenLeftNav && (
-            <div className="flex items-center pr-2.5 sm:pr-5 mr-2 sm:mr-3 border-r border-stone-200/90">
+            <div className="flex items-center pr-2 sm:pr-3.5 mr-2 sm:mr-3 border-r border-stone-200/90">
               <button
                 type="button"
                 onClick={onOpenLeftNav}
@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-[13px] font-semibold text-[#2c3d31] whitespace-nowrap">
+        <nav className="hidden xl:flex items-center gap-3.5 2xl:gap-6 text-[13px] font-semibold text-[#2c3d31] whitespace-nowrap">
           <button
             type="button"
             onClick={onNavigateHome}
@@ -224,7 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
           <a
             href="#discovery-3d"
-            className={`py-1 transition-colors hover:text-[#183c2a] ${
+            className={`py-1 transition-colors hover:text-[#183c2a] hidden 2xl:inline ${
               activeSection === 'discovery-3d' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
             }`}
           >
@@ -232,7 +232,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
           <a
             href="#traceability"
-            className={`py-1 transition-colors hover:text-[#183c2a] ${
+            className={`py-1 transition-colors hover:text-[#183c2a] hidden 2xl:inline ${
               activeSection === 'traceability' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
             }`}
           >
@@ -240,7 +240,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
           <a
             href="#reviews"
-            className={`py-1 transition-colors hover:text-[#183c2a] ${
+            className={`py-1 transition-colors hover:text-[#183c2a] hidden 2xl:inline ${
               activeSection === 'reviews' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
             }`}
           >
@@ -249,16 +249,16 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 whitespace-nowrap">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap">
           {onOpenTracker && (
             <button
               type="button"
               onClick={onOpenTracker}
-              className="flex items-center gap-1.5 h-9 sm:h-10 rounded-full border border-stone-200/90 bg-white px-2.5 sm:px-3.5 text-xs font-semibold text-[#182019] shadow-2xs hover:bg-stone-50 hover:border-stone-300 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+              className="flex items-center gap-1.5 h-9 sm:h-10 rounded-full border border-stone-200/90 bg-white px-2.5 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:bg-stone-50 hover:border-stone-300 transition-all shrink-0 whitespace-nowrap cursor-pointer"
               title="Track Orders"
             >
               <Package className="h-4 w-4 text-[#183c2a]" />
-              <span className="hidden xl:inline">Track</span>
+              <span className="hidden 2xl:inline">Track</span>
               {activeOrdersCount > 0 && (
                 <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse ml-0.5" />
               )}
@@ -280,16 +280,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={onOpenLoginModal}
-                className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-full border border-stone-200 bg-white px-2 sm:px-3.5 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+                className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-full border border-stone-200 bg-white px-2.5 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
                 title="Click to Switch Actor Login (Farmer, Delivery, Admin, Customer)"
               >
                 <div className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#183c2a]/10 text-[#183c2a]">
                   {getRoleIcon(currentUser.role)}
                 </div>
-                <span className="font-bold text-[#182019] max-w-[55px] sm:max-w-[110px] truncate hidden xs:inline">
+                <span className="font-bold text-[#182019] max-w-[55px] sm:max-w-[100px] truncate hidden xs:inline">
                   {currentUser.name.split(' ')[0]}
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden md:inline">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden 2xl:inline">
                   {currentUser.role}
                 </span>
                 <ChevronDown className="h-3 w-3 text-stone-400 shrink-0" />
@@ -299,11 +299,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="flex items-center gap-1.5 h-9 sm:h-10 rounded-full border border-rose-200/80 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 px-2 sm:px-3 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
+                  className="flex items-center gap-1.5 h-9 sm:h-10 rounded-full border border-rose-200/80 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 px-2.5 sm:px-3 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
                   title={`Sign out (${currentUser.name})`}
                 >
                   <LogOut className="h-3.5 w-3.5 text-rose-600" />
-                  <span className="hidden sm:inline">Log Out</span>
+                  <span className="hidden 2xl:inline">Log Out</span>
                 </button>
               )}
             </>
@@ -313,7 +313,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             type="button"
             onClick={onOpenCart}
             aria-label="View Shopping Cart"
-            className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-full bg-[#183c2a] px-3 sm:px-4 text-xs font-bold text-white shadow-sm hover:bg-[#214d36] active:scale-95 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+            className="flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 rounded-full bg-[#183c2a] px-3 sm:px-3.5 text-xs font-bold text-white shadow-sm hover:bg-[#214d36] active:scale-95 transition-all shrink-0 whitespace-nowrap cursor-pointer"
           >
             <ShoppingBag className="h-4 w-4 text-[#c5a880]" />
             <span className="hidden sm:inline">Basket</span>
