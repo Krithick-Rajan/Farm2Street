@@ -221,7 +221,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
             </div>
 
             {/* Login Inputs Form */}
-            <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs" noValidate autoComplete="off" data-form-type="other">
               {errorMessage && (
                 <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 font-medium">
                   {errorMessage}
@@ -236,6 +236,9 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                     <input
                       type="text"
+                      name="m_customer_acc"
+                      autoComplete="off"
+                      data-lpignore="true"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
@@ -254,6 +257,9 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                     <input
                       type="text"
+                      name="m_farmer_acc"
+                      autoComplete="off"
+                      data-lpignore="true"
                       value={farmerKisanId}
                       onChange={(e) => setFarmerKisanId(e.target.value)}
                       placeholder="Email or mobile number"
@@ -272,6 +278,9 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                     <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                     <input
                       type="text"
+                      name="m_driver_acc"
+                      autoComplete="off"
+                      data-lpignore="true"
                       value={driverId}
                       onChange={(e) => setDriverId(e.target.value)}
                       placeholder="Email or mobile number"
@@ -290,6 +299,9 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                     <input
                       type="email"
+                      name="m_admin_acc"
+                      autoComplete="off"
+                      data-lpignore="true"
                       value={adminEmail}
                       onChange={(e) => setAdminEmail(e.target.value)}
                       placeholder="Work email"
@@ -307,6 +319,9 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                   <input
                     type="password"
+                    name="m_auth_secret"
+                    autoComplete="new-password"
+                    data-lpignore="true"
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
                     placeholder="Password or OTP"

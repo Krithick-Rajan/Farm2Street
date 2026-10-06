@@ -237,7 +237,32 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     return GUEST_USER;
   });
-  const [activeView, setActiveView] = useState<ActiveView>('marketplace');
+  const [activeView, setActiveView] = useState<ActiveView>(() => {
+    if (typeof sessionStorage !== 'undefined') {
+      try {
+        const savedView = sessionStorage.getItem('f2s_active_view') as ActiveView;
+        if (savedView && ['marketplace', 'subscriptions', 'farmer', 'delivery', 'admin'].includes(savedView)) {
+          return savedView;
+        }
+        const savedSession = sessionStorage.getItem('f2s_active_session');
+        if (savedSession) {
+          const parsed = JSON.parse(savedSession);
+          if (parsed.role && parsed.role !== 'customer') {
+            return parsed.role as ActiveView;
+          }
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    return 'marketplace';
+  });
+
+  useEffect(() => {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('f2s_active_view', activeView);
+    }
+  }, [activeView]);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
 
   const [produceList, setProduceList] = useState<Produce[]>(() => {

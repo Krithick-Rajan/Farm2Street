@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Star,
   LogOut,
+  ShoppingBag,
 } from 'lucide-react';
 import { useFarm } from '../../context/FarmContext';
 import { DeliveryStatus, Order } from '../../types';
@@ -27,6 +28,7 @@ export const DeliveryPortal: React.FC = () => {
     updateOrderStatus,
     setActiveTrackOrderId,
     logout,
+    setActiveView,
   } = useFarm();
 
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -115,6 +117,15 @@ export const DeliveryPortal: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveView('marketplace')}
+                className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/20 transition-all cursor-pointer"
+                title="Browse Marketplace"
+              >
+                <ShoppingBag className="h-4 w-4 text-sky-300" />
+                <span>View Marketplace</span>
+              </button>
               <div className="flex items-center gap-5 bg-white/5 rounded-2xl px-5 py-3 border border-white/10">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">Today's Payout</span>

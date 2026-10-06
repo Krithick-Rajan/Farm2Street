@@ -90,7 +90,38 @@ export const FarmLogo: React.FC<FarmLogoProps> = ({
 };
 
 /* =========================================================================
-   2. PRIMARY NAVBAR
+   2. SHARED ROLE HELPERS
+   ========================================================================= */
+
+const roleNameMap: Record<UserRole, { short: string; full: string }> = {
+  customer: { short: 'Market', full: 'Customer Portal' },
+  farmer: { short: 'Farmer Console', full: 'Farmer Producer Console' },
+  delivery: { short: 'Delivery Hub', full: 'Delivery Partner Portal' },
+  admin: { short: 'Admin Center', full: 'SuperAdmin Governance' },
+};
+
+const getRoleIcon = (role: UserRole) => {
+  switch (role) {
+    case 'farmer':
+      return <Tractor className="h-3.5 w-3.5 text-amber-700" />;
+    case 'delivery':
+      return <Truck className="h-3.5 w-3.5 text-sky-700" />;
+    case 'admin':
+      return <ShieldCheck className="h-3.5 w-3.5 text-purple-700" />;
+    default:
+      return <User className="h-3.5 w-3.5 text-emerald-700" />;
+  }
+};
+
+const getRoleView = (role: UserRole) => {
+  if (role === 'farmer') return 'farmer';
+  if (role === 'delivery') return 'delivery';
+  if (role === 'admin') return 'admin';
+  return 'marketplace';
+};
+
+/* =========================================================================
+   3. PRIMARY NAVBAR
    ========================================================================= */
 
 export interface NavbarProps {
@@ -120,6 +151,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<'marketplace' | 'farms' | 'discovery-3d' | 'traceability' | 'reviews'>('marketplace');
+
+  const { activeView, setActiveView } = useFarm();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -151,19 +184,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const getRoleIcon = (role: UserRole) => {
-    switch (role) {
-      case 'farmer':
-        return <Tractor className="h-3.5 w-3.5 text-amber-700" />;
-      case 'delivery':
-        return <Truck className="h-3.5 w-3.5 text-sky-700" />;
-      case 'admin':
-        return <ShieldCheck className="h-3.5 w-3.5 text-purple-700" />;
-      default:
-        return <User className="h-3.5 w-3.5 text-emerald-700" />;
-    }
-  };
 
   return (
     <header
@@ -198,11 +218,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Desktop Navigation Links */}
         <nav className="hidden xl:flex items-center gap-3.5 2xl:gap-6 text-[13px] font-semibold text-[#2c3d31] whitespace-nowrap">
+          {currentUser.id !== 'guest' && currentUser.role !== 'customer' && (
+            <button
+              type="button"
+              onClick={() => setActiveView(getRoleView(currentUser.role))}
+              className={`py-1 px-2.5 rounded-lg transition-all flex items-center gap-1.5 font-bold ${
+                activeView === currentUser.role
+                  ? 'bg-[#183c2a] text-white shadow-2xs'
+                  : 'text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/60'
+              }`}
+            >
+              {getRoleIcon(currentUser.role)}
+              <span>{roleNameMap[currentUser.role].short}</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onNavigateHome}
             className={`py-1 transition-colors hover:text-[#183c2a] ${
-              activeSection === 'marketplace' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
+              activeSection === 'marketplace' && activeView === 'marketplace' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
             }`}
           >
             <span>Fresh Produce</span>
@@ -277,11 +312,49 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           ) : (
             <>
+              {/* Prominent Dashboard / Market Toggle Button for Farmer, Delivery, Admin */}
+              {currentUser.role !== 'customer' && (
+                activeView !== currentUser.role ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveView(getRoleView(currentUser.role))}
+                    className="flex items-center gap-1.5 h-8.5 sm:h-10 rounded-full bg-[#183c2a] hover:bg-[#225037] text-white px-2.5 sm:px-3.5 text-xs font-bold transition-all shadow-sm cursor-pointer border border-[#c5a880]/40 shrink-0"
+                    title={`Open ${roleNameMap[currentUser.role].full}`}
+                  >
+                    {getRoleIcon(currentUser.role)}
+                    <span className="hidden sm:inline">Go to {roleNameMap[currentUser.role].short}</span>
+                    <span className="sm:hidden">Dashboard</span>
+                    <ArrowRight className="h-3 w-3 text-[#c5a880]" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setActiveView('marketplace')}
+                    className="flex items-center gap-1.5 h-8.5 sm:h-10 rounded-full bg-white hover:bg-stone-50 text-[#183c2a] border border-stone-200 px-2.5 sm:px-3.5 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+                    title="Browse Fresh Marketplace"
+                  >
+                    <ShoppingBag className="h-3.5 w-3.5 text-[#183c2a]" />
+                    <span className="hidden sm:inline">Browse Marketplace</span>
+                    <span className="sm:hidden">Market</span>
+                  </button>
+                )
+              )}
+
               <button
                 type="button"
-                onClick={onOpenLoginModal}
+                onClick={() => {
+                  if (currentUser.role !== 'customer') {
+                    if (activeView === currentUser.role) {
+                      setActiveView('marketplace');
+                    } else {
+                      setActiveView(getRoleView(currentUser.role));
+                    }
+                  } else {
+                    onOpenLoginModal();
+                  }
+                }}
                 className="flex items-center gap-1 sm:gap-2 h-8.5 sm:h-10 rounded-full border border-stone-200 bg-white px-2 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
-                title="Click to Switch Actor Login (Farmer, Delivery, Admin, Customer)"
+                title={currentUser.role !== 'customer' ? `Click to view ${roleNameMap[currentUser.role].short}` : 'Click to Switch Actor'}
               >
                 <div className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#183c2a]/10 text-[#183c2a]">
                   {getRoleIcon(currentUser.role)}
@@ -292,7 +365,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden 2xl:inline">
                   {currentUser.role}
                 </span>
-                <ChevronDown className="h-3 w-3 text-stone-400 shrink-0 hidden xs:inline" />
               </button>
 
               {onLogout && (
@@ -405,11 +477,11 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
 
       <aside
         style={{ backgroundColor: '#f5f4ee' }}
-        className={`fixed top-0 bottom-0 left-0 z-50 w-80 max-w-[85vw] bg-[#f5f4ee] text-[#182019] shadow-2xl flex flex-col transition-transform duration-300 ease-out border-r border-stone-200/90 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-[320px] max-w-[90vw] bg-[#f5f4ee] text-[#182019] shadow-2xl flex flex-col transition-transform duration-300 ease-out border-r border-stone-200/90 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="p-4 sm:p-5 border-b border-stone-200 flex items-center justify-between bg-[#ece8dc]">
+        <div className="p-3.5 sm:p-4 border-b border-stone-200 flex items-center justify-between bg-[#ece8dc] shrink-0">
           <FarmLogo
             size="sm"
             textColor="text-[#182019]"
@@ -422,51 +494,79 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close Navigation"
-            className="p-2 rounded-xl text-stone-500 hover:text-stone-900 hover:bg-stone-200/80 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-stone-500 hover:text-stone-900 hover:bg-stone-200/80 transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="px-5 py-4 bg-white border-b border-stone-200 flex items-center justify-between shadow-2xs">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-[#183c2a] border border-emerald-950/20 flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-xs">
-              {currentUser.name.slice(0, 2).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-xs text-[#182019] truncate">{currentUser.name}</div>
-              <div className="text-[10px] text-emerald-700 capitalize font-medium flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                <span>{currentUser.role} Portal</span>
+        {/* Clean, Non-overlapping User Profile Row */}
+        <div className="p-3.5 bg-white border-b border-stone-200 shadow-2xs shrink-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="w-8 h-8 rounded-full bg-[#183c2a] border border-emerald-950/20 flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-xs">
+                {currentUser.name.slice(0, 2).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-bold text-xs text-[#182019] truncate">{currentUser.name}</div>
+                <div className="text-[10px] text-emerald-700 capitalize font-medium flex items-center gap-1 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse shrink-0" />
+                  <span className="truncate">{currentUser.role} Portal</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                setActiveView('login');
-              }}
-              title="Switch User / Sign In"
-              className="text-[11px] font-semibold text-stone-600 hover:text-stone-900 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer"
-            >
-              <span>Switch</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                logout();
-                onClose();
-              }}
-              title="Log Out"
-              className="flex items-center gap-1 text-[11px] font-semibold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-            >
-              <LogOut className="h-3 w-3" />
-              <span>Log Out</span>
-            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  setActiveView('login');
+                }}
+                title="Switch User / Sign In"
+                className="text-[10px] font-bold text-stone-700 hover:text-stone-900 px-2.5 py-1 rounded-md bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer"
+              >
+                Switch
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* High-Visibility Return to Role Dashboard Button */}
+        {currentUser.id !== 'guest' && currentUser.role !== 'customer' && (
+          <div className="p-2.5 bg-[#eef4eb] border-b border-[#2d5a3c]/15 shrink-0">
+            {activeView !== currentUser.role ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  setActiveView(getRoleView(currentUser.role));
+                }}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-[#183c2a] text-white text-xs font-bold shadow-sm hover:bg-[#214f36] transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  {getRoleIcon(currentUser.role)}
+                  <span className="truncate">Open {roleNameMap[currentUser.role].full}</span>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 text-[#c5a880] shrink-0" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  setActiveView('marketplace');
+                }}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-white border border-stone-200 text-[#183c2a] text-xs font-bold shadow-2xs hover:bg-stone-50 transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <ShoppingBag className="h-3.5 w-3.5 text-[#183c2a]" />
+                  <span className="truncate">Browse Marketplace</span>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 text-stone-400 shrink-0" />
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
           <div>
@@ -481,19 +581,19 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
                   setActiveView('marketplace');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all group cursor-pointer ${
+                className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all group cursor-pointer gap-2 ${
                   activeView === 'marketplace'
                     ? 'bg-[#183c2a] text-white shadow-sm'
                     : 'bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl ${activeView === 'marketplace' ? 'bg-white/15 text-white' : 'bg-[#f5f4ee] text-[#183c2a]'}`}>
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className={`p-2 rounded-xl shrink-0 ${activeView === 'marketplace' ? 'bg-white/15 text-white' : 'bg-[#f5f4ee] text-[#183c2a]'}`}>
                     <ShoppingBag className="h-4 w-4" />
                   </div>
-                  <span className="font-bold">Fresh Produce</span>
+                  <span className="font-bold truncate">Fresh Produce</span>
                 </div>
-                <span className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${activeView === 'marketplace' ? 'bg-[#c5a880] text-[#07100b]' : 'bg-stone-100 text-stone-600'}`}>
+                <span className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full shrink-0 ${activeView === 'marketplace' ? 'bg-[#c5a880] text-[#07100b]' : 'bg-stone-100 text-stone-600'}`}>
                   Daily Harvest
                 </span>
               </button>
@@ -504,19 +604,19 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
                   onClose();
                   setActiveView('subscriptions');
                 }}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all group cursor-pointer ${
+                className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold transition-all group cursor-pointer gap-2 ${
                   activeView === 'subscriptions'
                     ? 'bg-[#183c2a] text-white shadow-sm'
                     : 'bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl ${activeView === 'subscriptions' ? 'bg-white/15 text-white' : 'bg-[#f5f4ee] text-[#183c2a]'}`}>
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className={`p-2 rounded-xl shrink-0 ${activeView === 'subscriptions' ? 'bg-white/15 text-white' : 'bg-[#f5f4ee] text-[#183c2a]'}`}>
                     <Sparkles className="h-4 w-4" />
                   </div>
-                  <span className="font-bold">Subscription Plans</span>
+                  <span className="font-bold truncate">Subscription Plans</span>
                 </div>
-                <span className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${activeView === 'subscriptions' ? 'bg-[#c5a880] text-[#07100b]' : 'bg-stone-100 text-stone-600'}`}>
+                <span className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full shrink-0 ${activeView === 'subscriptions' ? 'bg-[#c5a880] text-[#07100b]' : 'bg-stone-100 text-stone-600'}`}>
                   Dedicated Page
                 </span>
               </button>
@@ -524,15 +624,15 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
               <button
                 type="button"
                 onClick={() => navigateToSection('farms')}
-                className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs transition-all group cursor-pointer"
+                className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs transition-all group cursor-pointer gap-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-[#f5f4ee] text-[#183c2a]">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="p-2 rounded-xl bg-[#f5f4ee] text-[#183c2a] shrink-0">
                     <Sprout className="h-4 w-4" />
                   </div>
-                  <span className="font-bold">Partner Farms</span>
+                  <span className="font-bold truncate">Partner Farms</span>
                 </div>
-                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 shrink-0">
                   NPOP Certified
                 </span>
               </button>
@@ -540,15 +640,15 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
               <button
                 type="button"
                 onClick={() => navigateToSection('discovery-3d')}
-                className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs transition-all group cursor-pointer"
+                className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs transition-all group cursor-pointer gap-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-[#f5f4ee] text-[#183c2a]">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="p-2 rounded-xl bg-[#f5f4ee] text-[#183c2a] shrink-0">
                     <Layers className="h-4 w-4" />
                   </div>
-                  <span className="font-bold">3D Harvest Discovery</span>
+                  <span className="font-bold truncate">3D Harvest Discovery</span>
                 </div>
-                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 shrink-0">
                   Interactive
                 </span>
               </button>
@@ -556,15 +656,15 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
               <button
                 type="button"
                 onClick={() => navigateToSection('traceability')}
-                className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs transition-all group cursor-pointer"
+                className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs transition-all group cursor-pointer gap-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-[#f5f4ee] text-[#183c2a]">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="p-2 rounded-xl bg-[#f5f4ee] text-[#183c2a] shrink-0">
                     <QrCode className="h-4 w-4" />
                   </div>
-                  <span className="font-bold">QR Traceability Engine</span>
+                  <span className="font-bold truncate">QR Traceability Engine</span>
                 </div>
-                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 shrink-0">
                   Batch Provenance
                 </span>
               </button>
@@ -572,15 +672,15 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
               <button
                 type="button"
                 onClick={() => navigateToSection('reviews')}
-                className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs transition-all group cursor-pointer"
+                className="w-full flex items-center justify-between p-3 rounded-2xl text-xs font-semibold bg-white hover:bg-stone-100 text-[#182019] border border-stone-200/80 shadow-2xs transition-all group cursor-pointer gap-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-[#f5f4ee] text-[#183c2a]">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="p-2 rounded-xl bg-[#f5f4ee] text-[#183c2a] shrink-0">
                     <Sparkles className="h-4 w-4 text-[#c5a880]" />
                   </div>
-                  <span className="font-bold">Customer Reviews</span>
+                  <span className="font-bold truncate">Customer Reviews</span>
                 </div>
-                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#183c2a]/10 text-[#183c2a]">
+                <span className="text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#183c2a]/10 text-[#183c2a] shrink-0">
                   Verified Ratings
                 </span>
               </button>
@@ -599,23 +699,23 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
                     onOpenTracker();
                     onClose();
                   }}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-stone-200 bg-white hover:bg-stone-50 shadow-2xs transition-all text-xs text-[#182019] cursor-pointer"
+                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-stone-200 bg-white hover:bg-stone-50 shadow-2xs transition-all text-xs text-[#182019] cursor-pointer gap-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-100">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="p-2 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-100 shrink-0">
                       <Truck className="h-4 w-4" />
                     </div>
-                    <div className="text-left">
-                      <div className="font-bold text-[#182019]">Live Order Tracker</div>
-                      <div className="text-[10px] text-stone-500">8-Stage GPS Satellite Tracking</div>
+                    <div className="text-left min-w-0 flex-1">
+                      <div className="font-bold text-[#182019] truncate">Live Order Tracker</div>
+                      <div className="text-[10px] text-stone-500 truncate">8-Stage GPS Tracking</div>
                     </div>
                   </div>
                   {activeOrdersCount > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#183c2a] text-white">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#183c2a] text-white shrink-0">
                       {activeOrdersCount} Active
                     </span>
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-stone-400" />
+                    <ChevronRight className="h-4 w-4 text-stone-400 shrink-0" />
                   )}
                 </button>
               )}
@@ -627,15 +727,15 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
                     onOpenCart();
                     onClose();
                   }}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-stone-200 bg-white hover:bg-stone-50 shadow-2xs text-xs text-[#182019] transition-all cursor-pointer"
+                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-stone-200 bg-white hover:bg-stone-50 shadow-2xs text-xs text-[#182019] transition-all cursor-pointer gap-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-stone-100 text-[#183c2a]">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="p-2 rounded-xl bg-stone-100 text-[#183c2a] shrink-0">
                       <Package className="h-4 w-4" />
                     </div>
-                    <span className="font-bold">Shopping Basket</span>
+                    <span className="font-bold truncate">Shopping Basket</span>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-stone-400" />
+                  <ChevronRight className="h-4 w-4 text-stone-400 shrink-0" />
                 </button>
               )}
             </div>
@@ -683,7 +783,7 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
           </div>
         </div>
 
-        <div className="p-3 border-t border-stone-200 bg-white">
+        <div className="p-3 border-t border-stone-200 bg-white shrink-0">
           {currentUser.id === 'guest' ? (
             <button
               type="button"
@@ -691,7 +791,7 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
                 onClose();
                 setActiveView('login');
               }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-[#183c2a] hover:bg-[#23533b] border border-[#183c2a] transition-all cursor-pointer shadow-sm"
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold text-white bg-[#183c2a] hover:bg-[#23533b] transition-all cursor-pointer shadow-sm"
             >
               <User className="h-3.5 w-3.5 text-[#c5a880]" />
               <span>Sign In / Switch Portal</span>
@@ -703,7 +803,7 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
                 logout();
                 onClose();
               }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer shadow-sm"
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer"
             >
               <LogOut className="h-3.5 w-3.5 text-rose-600" />
               <span>Sign Out ({currentUser.name.split(' ')[0]})</span>
@@ -711,19 +811,12 @@ export const LeftSlideNav: React.FC<LeftSlideNavProps> = ({
           )}
         </div>
 
-        <div className="p-4 border-t border-stone-200 bg-[#ece8dc] text-[11px] text-stone-600 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-[#183c2a] uppercase tracking-wider">
-              Need Assistance?
-            </span>
-            <span className="text-[10px] font-mono text-emerald-800 font-semibold">24/7 Helpline</span>
+        <div className="p-3 border-t border-stone-200 bg-[#ece8dc] text-[10px] text-stone-600 shrink-0 flex items-center justify-between">
+          <div>
+            <span className="font-bold text-[#183c2a] uppercase tracking-wider block">24/7 Helpline</span>
+            <span className="font-bold text-[#182019] text-xs">1800-FARM-2-STREET</span>
           </div>
-          <div className="text-xs font-bold text-[#182019] tracking-wide">
-            1800-FARM-2-STREET
-          </div>
-          <div className="text-[10px] text-stone-500">
-            Direct harvest delivery &bull; 100% Tested residue-free
-          </div>
+          <span className="text-[9px] text-stone-500 text-right">Direct harvest<br />residue-free</span>
         </div>
       </aside>
     </>

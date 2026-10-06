@@ -259,7 +259,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="mt-7 space-y-5" noValidate>
+          <form onSubmit={handleSubmit} className="mt-7 space-y-5" noValidate autoComplete="off" data-form-type="other">
             {/* Dynamic Identifier Input */}
             <div className="shrink-0">
               <div className="flex justify-between items-center mb-2">
@@ -271,6 +271,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div className="relative">
                 <input
                   type="text"
+                  name="f2s_account_id"
+                  autoComplete="off"
+                  data-lpignore="true"
                   value={emailOrId}
                   onChange={(e) => setEmailOrId(e.target.value)}
                   placeholder={roleMeta[selectedRole].inputPlaceholder}
@@ -300,6 +303,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  name="f2s_portal_secret"
+                  autoComplete="new-password"
+                  data-lpignore="true"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"

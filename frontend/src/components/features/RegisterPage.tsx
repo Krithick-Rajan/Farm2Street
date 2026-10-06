@@ -647,6 +647,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    name="reg_new_pwd"
+                    autoComplete="new-password"
+                    data-lpignore="true"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Password"
@@ -669,6 +672,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    name="reg_confirm_pwd"
+                    autoComplete="new-password"
+                    data-lpignore="true"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm password"

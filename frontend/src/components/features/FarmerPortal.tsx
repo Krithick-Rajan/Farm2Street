@@ -16,6 +16,7 @@ import {
   Layers,
   ArrowRight,
   LogOut,
+  ShoppingBag,
 } from 'lucide-react';
 import { useFarm } from '../../context/FarmContext';
 import { Produce, TraceabilityBatch } from '../../types';
@@ -35,6 +36,7 @@ export const FarmerPortal: React.FC = () => {
     settlements,
     logout,
     currentUser,
+    setActiveView,
   } = useFarm();
 
   const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'batches' | 'earnings' | 'profile'>('orders');
@@ -221,6 +223,15 @@ export const FarmerPortal: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveView('marketplace')}
+                className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/20 transition-all cursor-pointer"
+                title="Browse Marketplace as Customer"
+              >
+                <ShoppingBag className="h-4 w-4 text-emerald-300" />
+                <span>View Marketplace</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setIsBatchModalOpen(true)}
