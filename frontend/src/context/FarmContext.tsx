@@ -883,11 +883,9 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActiveTrackOrderId(newOrder.id);
 
     // Sync full order to Supabase PostgreSQL 16
-    try {
-      supabaseOrderService.insert(newOrder);
-    } catch (e) {
-      console.warn('Supabase order sync fallback:', e);
-    }
+    supabaseOrderService.insert(newOrder).catch((e) => {
+      console.warn('Supabase order sync error:', e);
+    });
 
     return newOrder;
   };

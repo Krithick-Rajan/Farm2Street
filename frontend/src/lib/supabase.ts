@@ -262,11 +262,14 @@ export const supabaseOrderService = {
           order_code: order.id,
           customer_name: order.customerName,
           customer_phone: order.customerPhone,
-          delivery_address: order.deliveryAddress,
+          delivery_address: order.deliveryAddress || 'Address provided at checkout',
+          farmer_name: order.farmerName || "Sri Farm's",
           total_amount: order.totalAmount,
           payment_status: order.paymentStatus === 'paid' ? 'Paid' : 'Pending',
           payment_id: order.paymentId,
           order_status: order.status || 'Order Placed',
+          items_json: order.items || [],
+          timeline_json: order.timeline || [],
         };
         await supabase.from('orders').insert(minimalOrder);
       }
