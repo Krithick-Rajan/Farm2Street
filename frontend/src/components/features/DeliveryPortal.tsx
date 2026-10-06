@@ -118,7 +118,7 @@ export const DeliveryPortal: React.FC = () => {
               <div className="flex items-center gap-5 bg-white/5 rounded-2xl px-5 py-3 border border-white/10">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">Today's Payout</span>
-                  <span className="text-xl sm:text-2xl font-black text-amber-300">₹{deliveryPartnerProfile.todayEarnings}</span>
+                  <span className="text-xl sm:text-2xl font-black text-amber-300">₹{completedDeliveries.length * 90}</span>
                 </div>
                 <div className="border-l border-white/15 pl-5">
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">Completed</span>
@@ -154,7 +154,7 @@ export const DeliveryPortal: React.FC = () => {
               Distance Today
             </span>
             <div className="text-2xl font-bold text-stone-900 mt-0.5">
-              42.6 km
+              {(completedDeliveries.length * 4.8).toFixed(1)} km
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export const DeliveryPortal: React.FC = () => {
 
               {activeDeliveries.length === 0 ? (
                 <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-xs text-stone-400 shadow-sm">
-                  All assigned orders have been successfully delivered! Great job.
+                  No active runs currently assigned. When a farmer prepares an order and marks it "Ready for Pickup", it will appear here immediately for transit!
                 </div>
               ) : (
                 activeDeliveries.map((order, idx) => {

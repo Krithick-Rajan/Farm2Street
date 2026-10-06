@@ -63,21 +63,32 @@ export const FarmerPortal: React.FC = () => {
     const orderFarmer = (o.farmerName || '').toLowerCase();
     const hasFarmerItem = o.items?.some((i) => {
       const pFarmer = (i.farmer || '').toLowerCase();
-      return (farm && pFarmer.includes(farm)) || (fName && pFarmer.includes(fName.split(' ')[0]));
+      return (farm && pFarmer.includes(farm)) || (fName && pFarmer.includes(fName));
     });
 
-    return (
+    const isDirectMatch =
       (farm && orderFarmer.includes(farm)) ||
-      (fName && orderFarmer.includes(fName.split(' ')[0])) ||
+      (fName && orderFarmer.includes(fName)) ||
       hasFarmerItem ||
-      // When viewing in superadmin or active demo, permit viewing
-      currentUser?.role === 'admin'
-    );
+      currentUser?.role === 'admin';
+
+    const isIncomingMarketOrder =
+      !orderFarmer ||
+      orderFarmer.includes('sri') ||
+      orderFarmer.includes('green valley') ||
+      orderFarmer.includes('farm');
+
+    return isDirectMatch || isIncomingMarketOrder;
   });
+
   const pendingPrepOrders = farmerOrders.filter(
-    (o) => o.status === 'Order Confirmed' || o.status === 'Preparing'
+    (o) => o.status === 'Order Placed' || o.status === 'Order Confirmed' || o.status === 'Preparing'
   );
   const readyPickupOrders = farmerOrders.filter((o) => o.status === 'Ready for Pickup');
+
+  const farmerDelivered = farmerOrders.filter((o) => o.status === 'Delivered');
+  const grossRevenue = farmerDelivered.reduce((sum, o) => sum + o.totalAmount, 0);
+  const pendingSettlement = pendingPrepOrders.concat(readyPickupOrders).reduce((sum, o) => sum + o.totalAmount, 0);
 
   const handleCreateProduce = (e: React.FormEvent) => {
     e.preventDefault();
@@ -262,10 +273,10 @@ export const FarmerPortal: React.FC = () => {
               Weekly Gross Revenue
             </span>
             <div className="text-2xl sm:text-3xl font-bold text-[#182019] mt-1">
-              ₹24,850
+              ₹{grossRevenue.toLocaleString()}
             </div>
             <div className="text-[11px] text-emerald-700 font-bold mt-1">
-              +26% higher than APMC Mandi
+              {grossRevenue > 0 ? '+26% higher than APMC Mandi' : 'Awaiting fulfilled drops'}
             </div>
           </div>
 
@@ -274,7 +285,7 @@ export const FarmerPortal: React.FC = () => {
               Pending Settlement
             </span>
             <div className="text-2xl sm:text-3xl font-bold text-emerald-700 mt-1">
-              ₹6,380
+              ₹{pendingSettlement.toLocaleString()}
             </div>
             <div className="text-[11px] text-stone-500 mt-1">
               Auto-disburses via Razorpay T+1
@@ -362,7 +373,7 @@ export const FarmerPortal: React.FC = () => {
 
                         {/* Order Prep Action Controls */}
                         <div className="flex items-center gap-2">
-                          {order.status === 'Order Confirmed' && (
+                          {(order.status === 'Order Placed' || order.status === 'Order Confirmed') && (
                             <button
                               type="button"
                               onClick={() => updateOrderStatus(order.id, 'Preparing', 'Farmer started harvesting and crate packing.')}

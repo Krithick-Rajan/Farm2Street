@@ -15,7 +15,7 @@ import {
   CustomerReview,
 } from '../types';
 import { INITIAL_PRODUCE, TRACEABILITY_MOCK, SUBSCRIPTION_BOXES } from '../data/mockData';
-import { supabase, getSupabaseHealth, supabaseUserService, SupabaseUser } from '../lib/supabase';
+import { supabase, getSupabaseHealth, supabaseUserService, supabaseOrderService, SupabaseUser } from '../lib/supabase';
 
 export type ActiveView = 'marketplace' | 'subscriptions' | 'farmer' | 'delivery' | 'admin' | 'login' | 'register';
 
@@ -31,7 +31,9 @@ interface FarmContextType {
   registerUser: (data: {
     role: UserRole;
     name: string;
-    emailOrPhone: string;
+    email?: string;
+    phone?: string;
+    emailOrPhone?: string;
     password?: string;
     extraInfo?: string;
     farmName?: string;
@@ -107,23 +109,23 @@ export const GUEST_USER: CurrentUser = {
 
 const INITIAL_FARMER_PROFILE: FarmerProfile = {
   id: 'frm-001',
-  name: 'Ramesh Patel',
-  farmName: 'Green Valley Organic Farms',
-  location: 'Sector 4, Certified Organic Agro-Belt',
+  name: 'Sri',
+  farmName: "Sri Farm's",
+  location: 'Coimbatore Agro Belt',
   totalAcres: 8.5,
   organicCertified: true,
   certificationNumber: 'NPOP/NAB/0018-ORG-2024',
   soilCarbonIndex: '0.84% (High Fertility)',
   rating: 4.9,
-  joinedDate: 'March 2024',
-  totalDeliveries: 420,
+  joinedDate: 'October 2026',
+  totalDeliveries: 0,
   bankAccountLinked: true,
 };
 
 const INITIAL_DELIVERY_PROFILE: DeliveryPartnerProfile = {
   id: 'drv-001',
-  name: 'Eco Delivery Partner',
-  phone: '',
+  name: 'Gobi',
+  phone: '8974563215',
   vehicleType: 'Electric Transit Cargo',
   vehicleNumber: 'EV-TRANSIT-01',
   rating: 5.0,
@@ -133,35 +135,7 @@ const INITIAL_DELIVERY_PROFILE: DeliveryPartnerProfile = {
   status: 'available',
 };
 
-const INITIAL_SETTLEMENTS: Settlement[] = [
-  {
-    id: 'SETTL-2026-09-01',
-    farmerName: 'Ramesh Patel',
-    amount: 14250,
-    orderCount: 38,
-    date: '2026-09-18',
-    status: 'completed',
-    utrNumber: 'HDFC000192847291',
-  },
-  {
-    id: 'SETTL-2026-09-02',
-    farmerName: 'Anandi Devi',
-    amount: 8900,
-    orderCount: 24,
-    date: '2026-09-19',
-    status: 'completed',
-    utrNumber: 'SBIN000847291844',
-  },
-  {
-    id: 'SETTL-2026-09-03',
-    farmerName: 'Ramesh Patel',
-    amount: 6380,
-    orderCount: 16,
-    date: '2026-09-21',
-    status: 'processing',
-    utrNumber: 'PENDING_DISBURSEMENT',
-  },
-];
+const INITIAL_SETTLEMENTS: Settlement[] = [];
 
 const INITIAL_SUBSCRIPTIONS: UserSubscription[] = [
   {
@@ -188,88 +162,7 @@ const INITIAL_SUBSCRIPTIONS: UserSubscription[] = [
   },
 ];
 
-const INITIAL_ORDERS: Order[] = [
-  {
-    id: 'ORD-2026-8841',
-    customerId: 'usr-krithick',
-    customerName: 'Krithick Rajan',
-    customerPhone: '+91 98765 43210',
-    deliveryAddress: '14, Greenview Enclave, Avinashi Road, Coimbatore',
-    farmPickupLocation: 'Green Valley Organic Farms, Sector 4',
-    farmerName: 'Green Valley Organic Farms',
-    items: [
-      {
-        produceId: 'prod-1',
-        name: 'Heirloom Vine Tomatoes',
-        price: 35,
-        quantity: 2,
-        unit: 'kg',
-        farmer: 'Green Valley Organic Farms',
-        image: 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?auto=format&fit=crop&w=900&q=85',
-      },
-      {
-        produceId: 'prod-2',
-        name: 'Organic Carrots',
-        price: 50,
-        quantity: 1,
-        unit: 'kg',
-        farmer: 'Sunrise Fields',
-        image: 'https://images.unsplash.com/photo-1445282768818-728615cc910a?auto=format&fit=crop&w=900&q=85',
-      },
-    ],
-    subtotal: 120,
-    deliveryFee: 0,
-    totalAmount: 120,
-    status: 'Out for Delivery',
-    paymentMethod: 'Razorpay UPI',
-    paymentId: 'pay_live_f2s_demo_982',
-    razorpayOrderId: 'order_live_982',
-    paymentStatus: 'paid',
-    batchId: 'F2S-TM-20260920-01',
-    distanceKm: 4.8,
-    estimatedDeliveryMinutes: 25,
-    createdAt: 'Today 08:30 AM',
-    updatedAt: 'Today 11:45 AM',
-    assignedDeliveryPartner: {
-      id: 'drv-001',
-      name: 'Senthil Kumar',
-      phone: '+91 98765 43210',
-      vehicle: 'Electric Cargo EV-12',
-    },
-    timeline: [
-      {
-        status: 'Order Placed',
-        timestamp: 'Today 08:30 AM',
-        note: 'Direct harvest order received from customer.',
-      },
-      {
-        status: 'Order Confirmed',
-        timestamp: 'Today 08:35 AM',
-        note: 'Razorpay UPI payment confirmed.',
-      },
-      {
-        status: 'Preparing',
-        timestamp: 'Today 09:15 AM',
-        note: 'Picked fresh from Green Valley beds and quality graded.',
-      },
-      {
-        status: 'Ready for Pickup',
-        timestamp: 'Today 10:15 AM',
-        note: 'Sealed in biodegradable crates with batch QR provenance tag at farm gate.',
-      },
-      {
-        status: 'Delivery Partner Assigned',
-        timestamp: 'Today 10:45 AM',
-        note: 'Assigned to EV Delivery Rider #12. Staged at Green Valley Micro-Hub.',
-      },
-      {
-        status: 'Out for Delivery',
-        timestamp: 'Today 11:45 AM',
-        note: 'EV Rider #12 en route to customer doorstep.',
-      },
-    ],
-  },
-];
+const INITIAL_ORDERS: Order[] = [];
 
 const INITIAL_REVIEWS: CustomerReview[] = [
   {
@@ -459,6 +352,58 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
   }, []);
 
+  // Dynamic Live Orders Synchronization & Realtime Subscription from Supabase
+  useEffect(() => {
+    if (!supabase) return;
+
+    const fetchOrders = () => {
+      supabaseOrderService.getAll().then((dbOrders) => {
+        if (dbOrders && dbOrders.length > 0) {
+          setOrders(dbOrders);
+        }
+      });
+    };
+
+    fetchOrders();
+
+    const sub = supabaseOrderService.subscribeToOrders(() => {
+      fetchOrders();
+    });
+
+    return () => {
+      sub?.unsubscribe();
+    };
+  }, []);
+
+  // Dynamically calculate farmer settlements from real delivered orders
+  useEffect(() => {
+    const deliveredOrders = orders.filter((o) => o.status === 'Delivered');
+    if (deliveredOrders.length === 0) {
+      setSettlements([]);
+      return;
+    }
+    const grouped: Record<string, { farmerName: string; amount: number; count: number; date: string }> = {};
+    deliveredOrders.forEach((o) => {
+      const f = o.farmerName || "Sri Farm's";
+      if (!grouped[f]) {
+        grouped[f] = { farmerName: f, amount: 0, count: 0, date: o.createdAt || 'Today' };
+      }
+      grouped[f].amount += o.totalAmount;
+      grouped[f].count += 1;
+    });
+
+    const calculated: Settlement[] = Object.entries(grouped).map(([farmer, g], idx) => ({
+      id: `SETTL-2026-${String(idx + 1).padStart(2, '0')}`,
+      farmerName: g.farmerName,
+      amount: g.amount,
+      orderCount: g.count,
+      date: g.date,
+      status: 'completed',
+      utrNumber: `RAZORPAY_ESCROW_${Math.floor(10000000 + Math.random() * 90000000)}`,
+    }));
+    setSettlements(calculated);
+  }, [orders]);
+
   // Dynamic Customer Reviews State with LocalStorage Persistence
   const [reviews, setReviews] = useState<CustomerReview[]>(() => {
     try {
@@ -640,8 +585,22 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     if (targetRole === 'farmer') {
+      setFarmerProfile((prev) => ({
+        ...prev,
+        name: user.name,
+        farmName: user.farm_name || (user.name ? `${user.name}'s Farm` : prev.farmName),
+        location: user.location || user.address || prev.location,
+        totalAcres: user.total_acres || prev.totalAcres,
+      }));
       setActiveView('farmer');
     } else if (targetRole === 'delivery') {
+      setDeliveryPartnerProfile((prev) => ({
+        ...prev,
+        name: user.name,
+        phone: user.phone || user.email || prev.phone,
+        vehicleType: user.vehicle_type || prev.vehicleType,
+        vehicleNumber: user.vehicle_number || prev.vehicleNumber,
+      }));
       setActiveView('delivery');
     } else if (targetRole === 'admin') {
       setActiveView('admin');
@@ -678,7 +637,9 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const registerUser = async (data: {
     role: UserRole;
     name: string;
-    emailOrPhone: string;
+    email?: string;
+    phone?: string;
+    emailOrPhone?: string;
     password?: string;
     extraInfo?: string;
     farmName?: string;
@@ -688,14 +649,21 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     vehicleNumber?: string;
   }): Promise<{ success: boolean; error?: string }> => {
     const rawPassword = data.password || 'farm123';
+    const emailVal = data.email?.trim() || (data.emailOrPhone?.includes('@') ? data.emailOrPhone.trim() : '');
+    const phoneVal = data.phone?.trim() || (!data.emailOrPhone?.includes('@') ? data.emailOrPhone?.trim() || '' : '');
 
     // Register into Supabase PostgreSQL users table
     const regRes = await supabaseUserService.register({
       name: data.name,
-      email: data.emailOrPhone,
+      email: emailVal,
+      phone: phoneVal,
       password: rawPassword,
       role: data.role,
-      phone: data.emailOrPhone.includes('@') ? '' : data.emailOrPhone,
+      farmName: data.farmName,
+      location: data.location,
+      totalAcres: data.totalAcres,
+      vehicleType: data.vehicleType,
+      vehicleNumber: data.vehicleNumber,
       address: data.location,
       extraInfo: data.extraInfo || (data.role === 'farmer' ? data.farmName : data.location),
     });
@@ -705,11 +673,12 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const created = regRes.user;
+    const identifier = created.email || created.phone || emailVal || phoneVal || data.emailOrPhone || '';
     const newUser: CurrentUser = {
       id: String(created.id),
       name: created.name,
       role: data.role,
-      emailOrPhone: data.emailOrPhone,
+      emailOrPhone: identifier,
       extraInfo: data.extraInfo || (data.role === 'farmer' ? data.farmName : data.location),
     };
 
@@ -717,7 +686,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setFarmerProfile((prev) => ({
         ...prev,
         name: data.name,
-        farmName: data.farmName || prev.farmName,
+        farmName: data.farmName || (data.name ? `${data.name}'s Farm` : prev.farmName),
         location: data.location || prev.location,
         totalAcres: data.totalAcres || prev.totalAcres,
       }));
@@ -726,7 +695,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setDeliveryPartnerProfile((prev) => ({
         ...prev,
         name: data.name,
-        phone: data.emailOrPhone,
+        phone: phoneVal || identifier,
         vehicleType: data.vehicleType || prev.vehicleType,
         vehicleNumber: data.vehicleNumber || prev.vehicleNumber,
       }));
@@ -869,9 +838,9 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const orderId = `F2S-ORD-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const firstItem = items[0]?.produce;
-    const batchId = firstItem?.batchId || 'F2S-TM-20260920-01';
-    const farmerName = firstItem?.farmer || 'Green Valley Organic Farms';
-    const farmPickupLocation = firstItem?.farmLocation || 'Valley Agro Belt';
+    const batchId = firstItem?.batchId || `F2S-${Date.now().toString().slice(-6)}`;
+    const farmerName = firstItem?.farmer || farmerProfile.farmName || "Sri Farm's";
+    const farmPickupLocation = firstItem?.farmLocation || farmerProfile.location || "Coimbatore Agro Belt";
 
     const newOrder: Order = {
       id: orderId,
@@ -885,7 +854,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         price: i.produce.price,
         quantity: i.quantity,
         unit: i.produce.unit,
-        farmer: i.produce.farmer,
+        farmer: i.produce.farmer || farmerName,
         image: i.produce.image,
       })),
       subtotal,
@@ -900,12 +869,12 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       farmPickupLocation,
       assignedDeliveryPartner: undefined,
       batchId,
-      distanceKm: 16.5,
-      estimatedDeliveryMinutes: 40,
+      distanceKm: 4.8,
+      estimatedDeliveryMinutes: 25,
       createdAt: `Today, ${timeStr}`,
       updatedAt: `Today, ${timeStr}`,
       timeline: [
-        { status: 'Order Placed', timestamp: timeStr, note: 'Order placed by customer.' },
+        { status: 'Order Placed', timestamp: timeStr, note: 'Direct customer order placed in platform.' },
         { status: 'Order Confirmed', timestamp: timeStr, note: `Razorpay signature verified (${paymentMethod}).` },
       ],
     };
@@ -913,26 +882,9 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setOrders((prev) => [newOrder, ...prev]);
     setActiveTrackOrderId(newOrder.id);
 
-    // Sync to Supabase PostgreSQL 16 (map camelCase -> snake_case schema columns)
+    // Sync full order to Supabase PostgreSQL 16
     try {
-      if (supabase) {
-        const dbOrder = {
-          order_code:       newOrder.id,
-          customer_name:    newOrder.customerName,
-          customer_phone:   newOrder.customerPhone,
-          delivery_address: newOrder.deliveryAddress,
-          total_amount:     newOrder.totalAmount,
-          payment_status:   newOrder.paymentStatus === 'paid' ? 'Paid' : 'Pending',
-          payment_id:       newOrder.paymentId,
-          order_status:     'Order Placed',
-        };
-        supabase
-          .from('orders')
-          .insert(dbOrder)
-          .then(({ error }) => {
-            if (error) console.warn('Supabase order write notice:', error.message);
-          });
-      }
+      supabaseOrderService.insert(newOrder);
     } catch (e) {
       console.warn('Supabase order sync fallback:', e);
     }
@@ -971,7 +923,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
           partner = {
             id: deliveryPartnerProfile.id,
             name: deliveryPartnerProfile.name,
-            phone: deliveryPartnerProfile.phone || '+91 98000 12345',
+            phone: deliveryPartnerProfile.phone || '+91 89745 63215',
             vehicle: `${deliveryPartnerProfile.vehicleType} (${deliveryPartnerProfile.vehicleNumber})`,
           };
         }
@@ -995,17 +947,7 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Async Supabase update
         try {
-          if (supabase) {
-            supabase
-              .from('orders')
-              .update({
-                order_status: nextStatus,
-              })
-              .eq('order_code', orderId)
-              .then(({ error }) => {
-                if (error) console.warn('Supabase order update notice:', error.message);
-              });
-          }
+          supabaseOrderService.updateStatus(orderId, nextStatus, partner, updatedTimeline);
         } catch (e) {
           console.warn('Supabase update status fallback:', e);
         }

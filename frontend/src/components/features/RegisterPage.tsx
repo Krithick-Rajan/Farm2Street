@@ -43,7 +43,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
 
   // Common fields (clean empty state for live user input)
   const [name, setName] = useState('');
-  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -87,8 +88,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       return;
     }
 
-    if (!emailOrPhone.trim()) {
-      setErrorMessage('Please enter your contact email or mobile number.');
+    if (!email.trim() && !phone.trim()) {
+      setErrorMessage('Please enter your email address or mobile phone number.');
       return;
     }
 
@@ -121,7 +122,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
     const payload: any = {
       role: selectedRole,
       name: name.trim(),
-      emailOrPhone: emailOrPhone.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      emailOrPhone: (email.trim() || phone.trim()),
       password,
     };
 
@@ -138,7 +141,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
       payload.vehicleNumber = vehicleNumber;
       payload.extraInfo = `${vehicleType} • ${vehicleNumber}`;
     } else {
-      payload.emailOrPhone = (adminOrgEmail || emailOrPhone).trim();
+      payload.email = (adminOrgEmail || email).trim();
+      payload.emailOrPhone = (adminOrgEmail || email || phone).trim();
       payload.extraInfo = adminDept;
     }
 
@@ -364,16 +368,30 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({
               />
             </div>
 
-            {/* Email / Mobile */}
+            {/* Email Address */}
             <div>
               <label className="text-xs font-semibold text-[#29352d] block mb-1.5">
-                {selectedRole === 'admin' ? 'Official Work Email' : 'Mobile Number or Email'}
+                {selectedRole === 'admin' ? 'Official Work Email' : 'Email Address'}
               </label>
               <input
-                type="text"
-                value={emailOrPhone}
-                onChange={(e) => setEmailOrPhone(e.target.value)}
-                placeholder={selectedRole === 'admin' ? 'Work email' : 'Email or mobile number'}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={selectedRole === 'admin' ? 'admin@farm2street.org' : 'e.g. name@example.com'}
+                className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b] focus:ring-3 focus:ring-[#34754b]/10"
+              />
+            </div>
+
+            {/* Mobile Number */}
+            <div>
+              <label className="text-xs font-semibold text-[#29352d] block mb-1.5">
+                Mobile Phone Number
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="10-digit mobile number (e.g. 9876543210)"
                 className="w-full h-12 px-4 rounded-[12px] border border-[#15301e]/15 bg-white text-sm text-[#152018] outline-none transition-all hover:border-[#15301e]/25 focus:border-[#34754b] focus:ring-3 focus:ring-[#34754b]/10"
               />
             </div>

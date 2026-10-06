@@ -39,7 +39,7 @@ export const AdminCenter: React.FC = () => {
     logout,
   } = useFarm();
 
-  const [activeTab, setActiveTab] = useState<'kpi' | 'orders' | 'farmers' | 'settlements' | 'traceability' | 'system'>('kpi');
+  const [activeTab, setActiveTab] = useState<'kpi' | 'orders' | 'farmers' | 'settlements'>('kpi');
   const [orderFilter, setOrderFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -170,7 +170,6 @@ export const AdminCenter: React.FC = () => {
               { id: 'orders', label: 'Global 8-Stage Order Lifecycle', icon: Package, count: activeOrdersCount, desc: 'Live dispatch & stages' },
               { id: 'farmers', label: 'Farmer KYC & Governance', icon: Tractor, desc: 'NPOP vetting & accounts' },
               { id: 'settlements', label: 'Razorpay Settlements & Payouts', icon: DollarSign, count: settlements.filter(s => s.status === 'processing').length, desc: 'T+1 Escrow disbursement' },
-              { id: 'system', label: 'Infrastructure & Supabase Status', icon: Server, desc: 'PostgreSQL 16 & APIs' },
             ].map((tab) => {
               const Icon = tab.icon;
               const isSelected = activeTab === tab.id;
@@ -462,112 +461,48 @@ export const AdminCenter: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100 text-stone-800">
-                {settlements.map((s) => (
-                  <tr key={s.id}>
-                    <td className="py-3 font-mono font-bold text-stone-900">{s.id}</td>
-                    <td className="py-3 font-medium">{s.farmerName}</td>
-                    <td className="py-3 font-bold text-emerald-800 text-sm">₹{s.amount.toLocaleString()}</td>
-                    <td className="py-3">{s.orderCount} orders</td>
-                    <td className="py-3">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
-                          s.status === 'completed'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {s.status}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right">
-                      {s.status === 'processing' ? (
-                        <button
-                          type="button"
-                          onClick={() => disburseSettlement(s.id)}
-                          className="rounded-lg bg-[#0c2340] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#15345d]"
-                        >
-                          Trigger Razorpay Payout
-                        </button>
-                      ) : (
-                        <span className="text-[11px] font-mono text-stone-400">{s.utrNumber}</span>
-                      )}
+                {settlements.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-stone-400 text-xs font-medium">
+                      No settlements pending disbursement. Once delivery partners complete order drop-offs, farmer settlement batches will be generated here automatically for T+1 payout.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  settlements.map((s) => (
+                    <tr key={s.id}>
+                      <td className="py-3 font-mono font-bold text-stone-900">{s.id}</td>
+                      <td className="py-3 font-medium">{s.farmerName}</td>
+                      <td className="py-3 font-bold text-emerald-800 text-sm">₹{s.amount.toLocaleString()}</td>
+                      <td className="py-3">{s.orderCount} orders</td>
+                      <td className="py-3">
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
+                            s.status === 'completed'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {s.status}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right">
+                        {s.status === 'processing' ? (
+                          <button
+                            type="button"
+                            onClick={() => disburseSettlement(s.id)}
+                            className="rounded-lg bg-[#0c2340] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#15345d]"
+                          >
+                            Trigger Razorpay Payout
+                          </button>
+                        ) : (
+                          <span className="text-[11px] font-mono text-stone-400">{s.utrNumber}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
-          </div>
-        )}
-
-        {/* TAB 5: SYSTEM INFRASTRUCTURE */}
-        {activeTab === 'system' && (
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
-            <div>
-              <h3 className="font-sans text-base font-bold text-[#182019]">
-                Cloud Infrastructure & Dual-Backend Health Check
-              </h3>
-              <p className="text-xs text-stone-500 mt-0.5">
-                Enterprise architecture running Supabase PostgreSQL 16 Cloud & Apache Tomcat Jakarta EE.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-              {/* 1. Supabase PostgreSQL */}
-              <div className="rounded-xl border border-emerald-300 bg-emerald-50/70 p-4 space-y-2 shadow-2xs">
-                <div className="flex items-center gap-2 text-emerald-800 font-bold">
-                  <Database className="h-4 w-4" />
-                  <span>Supabase PostgreSQL 16</span>
-                </div>
-                <div className="text-stone-700 font-semibold">Status: Online & Connected</div>
-                <div className="text-stone-500 text-[11px] leading-relaxed">
-                  Region: ap-south-1 (Mumbai)<br/>
-                  Engine: Realtime WebSockets Active<br/>
-                  Tables: produce, orders, farms, users
-                </div>
-              </div>
-
-              {/* 2. Supabase Auth & Realtime */}
-              <div className="rounded-xl border border-teal-300 bg-teal-50/70 p-4 space-y-2 shadow-2xs">
-                <div className="flex items-center gap-2 text-teal-900 font-bold">
-                  <Server className="h-4 w-4" />
-                  <span>Supabase Auth & Storage</span>
-                </div>
-                <div className="text-stone-700 font-semibold">Status: Active & Linked</div>
-                <div className="text-stone-500 text-[11px] leading-relaxed">
-                  Auth: JWT & Session Management<br/>
-                  Storage: Bucket for Harvest Proofs<br/>
-                  SDK: @supabase/supabase-js v2
-                </div>
-              </div>
-
-              {/* 3. Razorpay Payments */}
-              <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-2 shadow-2xs">
-                <div className="flex items-center gap-2 text-stone-800 font-bold">
-                  <CreditCard className="h-4 w-4 text-[#c5a880]" />
-                  <span>Razorpay T+1 Escrow</span>
-                </div>
-                <div className="text-stone-700 font-semibold">Status: Webhooks Verified</div>
-                <div className="text-stone-500 text-[11px] leading-relaxed">
-                  Signature: HMAC-SHA256<br/>
-                  Settlement: Instant UPI & Cards<br/>
-                  Disbursement: Automated T+1
-                </div>
-              </div>
-
-              {/* 4. Satellite Ortho Imagery & Routing */}
-              <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-2 shadow-2xs">
-                <div className="flex items-center gap-2 text-emerald-700 font-bold">
-                  <Truck className="h-4 w-4" />
-                  <span>Satellite Ortho Imagery</span>
-                </div>
-                <div className="text-stone-700 font-semibold">Status: High-Res Ortho Active</div>
-                <div className="text-stone-500 text-[11px] leading-relaxed">
-                  Provider: Leaflet + ArcGIS Ortho<br/>
-                  Labels: High-Contrast World Ref<br/>
-                  Zero Google APIs Dependency
-                </div>
-              </div>
-            </div>
           </div>
         )}
           </div>

@@ -90,15 +90,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     farmer: {
       label: 'Farmer',
       icon: Tractor,
-      inputLabel: 'Kisan Registration ID / Mobile',
-      inputPlaceholder: 'Kisan ID or mobile number',
+      inputLabel: 'Email or Mobile Number',
+      inputPlaceholder: 'Email or mobile number',
       quote: '+24% higher realization without intermediary commission cuts.',
     },
     delivery: {
       label: 'Delivery Partner',
       icon: Truck,
-      inputLabel: 'Fleet Driver ID / Vehicle Number',
-      inputPlaceholder: 'Driver ID or vehicle number',
+      inputLabel: 'Email or Mobile Number',
+      inputPlaceholder: 'Email or mobile number',
       quote: 'Clean electric transit with turn-by-turn farm-to-door navigation.',
     },
     admin: {

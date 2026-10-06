@@ -248,16 +248,16 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
               {selectedRole === 'farmer' && (
                 <div>
                   <label className="block font-semibold text-stone-700 mb-1">
-                    Kisan Registration ID / Farm Mobile
+                    Email Address or Farm Mobile
                   </label>
                   <div className="relative">
-                    <IdCard className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                     <input
                       type="text"
                       value={farmerKisanId}
                       onChange={(e) => setFarmerKisanId(e.target.value)}
-                      placeholder="Kisan ID or mobile number"
-                      className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-mono font-medium"
+                      placeholder="Email or mobile number"
+                      className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
                     />
                   </div>
                 </div>
@@ -266,16 +266,16 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
               {selectedRole === 'delivery' && (
                 <div>
                   <label className="block font-semibold text-stone-700 mb-1">
-                    Fleet Driver ID / Vehicle Registration
+                    Email Address or Mobile Number
                   </label>
                   <div className="relative">
-                    <Truck className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-stone-400" />
                     <input
                       type="text"
                       value={driverId}
                       onChange={(e) => setDriverId(e.target.value)}
-                      placeholder="Driver ID or vehicle number"
-                      className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-mono font-medium"
+                      placeholder="Email or mobile number"
+                      className="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-10 pr-3 text-stone-800 font-medium"
                     />
                   </div>
                 </div>
