@@ -217,7 +217,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden xl:flex items-center gap-3.5 2xl:gap-5 text-[13px] font-semibold text-[#2c3d31] whitespace-nowrap">
+        {/* Desktop Navigation Links - Core marketplace navigation */}
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-[13px] font-semibold text-[#2c3d31] whitespace-nowrap">
           <button
             type="button"
             onClick={onNavigateHome}
@@ -242,35 +243,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <span>Subscription Plans</span>
           </button>
-          <a
-            href="#discovery-3d"
-            className={`py-1 transition-colors hover:text-[#183c2a] hidden 2xl:inline ${
-              activeSection === 'discovery-3d' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
-            }`}
-          >
-            <span>3D Discovery</span>
-          </a>
-          <a
-            href="#traceability"
-            className={`py-1 transition-colors hover:text-[#183c2a] hidden 2xl:inline ${
-              activeSection === 'traceability' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
-            }`}
-          >
-            <span>QR Traceability</span>
-          </a>
-          <a
-            href="#reviews"
-            className={`py-1 transition-colors hover:text-[#183c2a] hidden 2xl:inline ${
-              activeSection === 'reviews' ? 'text-[#183c2a] font-bold' : 'text-[#2c3d31]'
-            }`}
-          >
-            <span>Customer Reviews</span>
-          </a>
         </nav>
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap">
-          {onOpenTracker && (
+          {onOpenTracker && (currentUser.id === 'guest' || currentUser.role === 'customer') && (
             <button
               type="button"
               onClick={onOpenTracker}
@@ -278,7 +255,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Track Orders"
             >
               <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#183c2a]" />
-              <span className="hidden 2xl:inline">Track</span>
+              <span className="hidden xl:inline">Track</span>
               {activeOrdersCount > 0 && (
                 <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse ml-0.5" />
               )}
@@ -303,11 +280,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveView(getRoleView(currentUser.role))}
-                    className="flex items-center gap-1 sm:gap-1.5 h-8.5 sm:h-10 rounded-full bg-[#183c2a] hover:bg-[#225037] text-white px-2 sm:px-3.5 text-xs font-bold transition-all shadow-sm cursor-pointer border border-[#c5a880]/40 shrink-0"
+                    className="flex items-center gap-1 sm:gap-1.5 h-8.5 sm:h-10 rounded-full bg-[#183c2a] hover:bg-[#225037] text-white px-2.5 sm:px-3.5 text-xs font-bold transition-all shadow-sm cursor-pointer border border-[#c5a880]/40 shrink-0"
                     title={`Open ${roleNameMap[currentUser.role].full}`}
                   >
                     {getRoleIcon(currentUser.role)}
-                    <span className="hidden sm:inline">Go to {roleNameMap[currentUser.role].short}</span>
+                    <span className="hidden sm:inline">{roleNameMap[currentUser.role].short}</span>
                     <span className="sm:hidden text-[11px] font-bold">{roleNameMap[currentUser.role].mobile}</span>
                     <ArrowRight className="h-3 w-3 text-[#c5a880] hidden xs:inline" />
                   </button>
@@ -315,11 +292,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveView('marketplace')}
-                    className="flex items-center gap-1 sm:gap-1.5 h-8.5 sm:h-10 rounded-full bg-white hover:bg-stone-50 text-[#183c2a] border border-stone-200 px-2 sm:px-3.5 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+                    className="flex items-center gap-1 sm:gap-1.5 h-8.5 sm:h-10 rounded-full bg-white hover:bg-stone-50 text-[#183c2a] border border-stone-200 px-2.5 sm:px-3.5 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
                     title="Browse Fresh Marketplace"
                   >
                     <ShoppingBag className="h-3.5 w-3.5 text-[#183c2a]" />
-                    <span className="hidden sm:inline">Browse Marketplace</span>
+                    <span className="hidden sm:inline">Marketplace</span>
                     <span className="sm:hidden text-[11px] font-bold">Market</span>
                   </button>
                 )
@@ -339,7 +316,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onOpenLoginModal();
                   }
                 }}
-                className="flex items-center gap-1 sm:gap-2 h-8.5 sm:h-10 rounded-full border border-stone-200 bg-white px-1.5 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+                className="flex items-center gap-1 sm:gap-2 h-8.5 sm:h-10 rounded-full border border-stone-200 bg-white px-2 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
                 title={currentUser.role !== 'customer' ? `Click to toggle ${roleNameMap[currentUser.role].short}` : 'Click to Switch Actor'}
               >
                 <div className="flex h-5.5 w-5.5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#183c2a]/10 text-[#183c2a]">
@@ -348,7 +325,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-bold text-[#182019] max-w-[80px] truncate hidden sm:inline">
                   {currentUser.name.split(' ')[0]}
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden 2xl:inline">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden xl:inline">
                   {currentUser.role}
                 </span>
               </button>
@@ -362,7 +339,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   title={`Sign out (${currentUser.name})`}
                 >
                   <LogOut className="h-3.5 w-3.5 text-rose-600" />
-                  <span className="hidden 2xl:inline">Log Out</span>
+                  <span className="hidden xl:inline">Log Out</span>
                 </button>
               )}
             </>
