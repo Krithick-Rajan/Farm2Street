@@ -44,7 +44,7 @@ export const FarmLogo: React.FC<FarmLogoProps> = ({
 }) => {
   const sizeMap = {
     sm: { circle: 'w-[28px] h-[28px]', icon: 'w-[15px] h-[15px]', text: 'text-[15px]' },
-    md: { circle: 'w-[36px] h-[36px]', icon: 'w-[19px] h-[19px]', text: 'text-[17px]' },
+    md: { circle: 'w-[30px] sm:w-[36px] h-[30px] sm:h-[36px]', icon: 'w-[16px] sm:w-[19px] h-[16px] sm:h-[19px]', text: 'text-[15px] sm:text-[17px]' },
     lg: { circle: 'w-[44px] h-[44px]', icon: 'w-[24px] h-[24px]', text: 'text-[20px]' },
     xl: { circle: 'w-[56px] h-[56px]', icon: 'w-[30px] h-[30px]', text: 'text-[26px]' },
   };
@@ -93,11 +93,11 @@ export const FarmLogo: React.FC<FarmLogoProps> = ({
    2. SHARED ROLE HELPERS
    ========================================================================= */
 
-const roleNameMap: Record<UserRole, { short: string; full: string }> = {
-  customer: { short: 'Market', full: 'Customer Portal' },
-  farmer: { short: 'Farmer Console', full: 'Farmer Producer Console' },
-  delivery: { short: 'Delivery Hub', full: 'Delivery Partner Portal' },
-  admin: { short: 'Admin Center', full: 'SuperAdmin Governance' },
+const roleNameMap: Record<UserRole, { short: string; full: string; mobile: string }> = {
+  customer: { short: 'Market', full: 'Customer Portal', mobile: 'Market' },
+  farmer: { short: 'Farmer Console', full: 'Farmer Producer Console', mobile: 'Console' },
+  delivery: { short: 'Delivery Hub', full: 'Delivery Partner Portal', mobile: 'Fleet' },
+  admin: { short: 'Admin Center', full: 'SuperAdmin Governance', mobile: 'Admin' },
 };
 
 const getRoleIcon = (role: UserRole) => {
@@ -190,7 +190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       style={{ backgroundColor: '#f5f4ee' }}
       className="fixed top-0 left-0 right-0 z-50 w-full bg-[#f5f4ee] border-b border-stone-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all"
     >
-      <div className="w-full flex h-[68px] sm:h-[72px] items-center justify-between px-3 sm:px-4 lg:px-6 xl:px-8 gap-2 sm:gap-3">
+      <div className="w-full max-w-[1800px] mx-auto flex h-[68px] sm:h-[72px] items-center justify-between px-2.5 sm:px-4 lg:px-6 xl:px-8 gap-1.5 sm:gap-3">
         {/* Left End: Menu Toggle & Brand Logo */}
         <div className="flex items-center shrink-0">
           {onOpenLeftNav && (
@@ -217,22 +217,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden xl:flex items-center gap-3.5 2xl:gap-6 text-[13px] font-semibold text-[#2c3d31] whitespace-nowrap">
-          {currentUser.id !== 'guest' && currentUser.role !== 'customer' && (
-            <button
-              type="button"
-              onClick={() => setActiveView(getRoleView(currentUser.role))}
-              className={`py-1 px-2.5 rounded-lg transition-all flex items-center gap-1.5 font-bold ${
-                activeView === currentUser.role
-                  ? 'bg-[#183c2a] text-white shadow-2xs'
-                  : 'text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/60'
-              }`}
-            >
-              {getRoleIcon(currentUser.role)}
-              <span>{roleNameMap[currentUser.role].short}</span>
-            </button>
-          )}
-
+        <nav className="hidden xl:flex items-center gap-3.5 2xl:gap-5 text-[13px] font-semibold text-[#2c3d31] whitespace-nowrap">
           <button
             type="button"
             onClick={onNavigateHome}
@@ -289,10 +274,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenTracker}
-              className="hidden sm:flex items-center justify-center gap-1.5 h-8.5 w-8.5 sm:w-auto sm:h-10 rounded-full border border-stone-200/90 bg-white p-0 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:bg-stone-50 hover:border-stone-300 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+              className="hidden sm:flex items-center justify-center gap-1.5 h-8.5 sm:h-10 rounded-full border border-stone-200/90 bg-white px-2.5 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:bg-stone-50 hover:border-stone-300 transition-all shrink-0 whitespace-nowrap cursor-pointer"
               title="Track Orders"
             >
-              <Package className="h-4 w-4 text-[#183c2a]" />
+              <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#183c2a]" />
               <span className="hidden 2xl:inline">Track</span>
               {activeOrdersCount > 0 && (
                 <span className="flex h-2 w-2 rounded-full bg-emerald-600 animate-pulse ml-0.5" />
@@ -304,7 +289,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onOpenLoginModal}
-              className="flex items-center gap-1.5 h-8.5 sm:h-10 rounded-full border border-[#183c2a] bg-[#183c2a] hover:bg-[#225037] text-white px-2.5 sm:px-4 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
+              className="flex items-center gap-1.5 h-8.5 sm:h-10 rounded-full border border-[#183c2a] bg-[#183c2a] hover:bg-[#225037] text-white px-3 sm:px-4 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
               title="Sign In / Switch Actor Portal"
             >
               <User className="h-3.5 w-3.5 text-[#c5a880]" />
@@ -318,28 +303,29 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveView(getRoleView(currentUser.role))}
-                    className="flex items-center gap-1.5 h-8.5 sm:h-10 rounded-full bg-[#183c2a] hover:bg-[#225037] text-white px-2.5 sm:px-3.5 text-xs font-bold transition-all shadow-sm cursor-pointer border border-[#c5a880]/40 shrink-0"
+                    className="flex items-center gap-1 sm:gap-1.5 h-8.5 sm:h-10 rounded-full bg-[#183c2a] hover:bg-[#225037] text-white px-2 sm:px-3.5 text-xs font-bold transition-all shadow-sm cursor-pointer border border-[#c5a880]/40 shrink-0"
                     title={`Open ${roleNameMap[currentUser.role].full}`}
                   >
                     {getRoleIcon(currentUser.role)}
                     <span className="hidden sm:inline">Go to {roleNameMap[currentUser.role].short}</span>
-                    <span className="sm:hidden">Dashboard</span>
-                    <ArrowRight className="h-3 w-3 text-[#c5a880]" />
+                    <span className="sm:hidden text-[11px] font-bold">{roleNameMap[currentUser.role].mobile}</span>
+                    <ArrowRight className="h-3 w-3 text-[#c5a880] hidden xs:inline" />
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() => setActiveView('marketplace')}
-                    className="flex items-center gap-1.5 h-8.5 sm:h-10 rounded-full bg-white hover:bg-stone-50 text-[#183c2a] border border-stone-200 px-2.5 sm:px-3.5 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
+                    className="flex items-center gap-1 sm:gap-1.5 h-8.5 sm:h-10 rounded-full bg-white hover:bg-stone-50 text-[#183c2a] border border-stone-200 px-2 sm:px-3.5 text-xs font-bold transition-all shadow-2xs cursor-pointer shrink-0"
                     title="Browse Fresh Marketplace"
                   >
                     <ShoppingBag className="h-3.5 w-3.5 text-[#183c2a]" />
                     <span className="hidden sm:inline">Browse Marketplace</span>
-                    <span className="sm:hidden">Market</span>
+                    <span className="sm:hidden text-[11px] font-bold">Market</span>
                   </button>
                 )
               )}
 
+              {/* Profile Pill - compact on mobile, detailed on desktop */}
               <button
                 type="button"
                 onClick={() => {
@@ -353,25 +339,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onOpenLoginModal();
                   }
                 }}
-                className="flex items-center gap-1 sm:gap-2 h-8.5 sm:h-10 rounded-full border border-stone-200 bg-white px-2 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
-                title={currentUser.role !== 'customer' ? `Click to view ${roleNameMap[currentUser.role].short}` : 'Click to Switch Actor'}
+                className="flex items-center gap-1 sm:gap-2 h-8.5 sm:h-10 rounded-full border border-stone-200 bg-white px-1.5 sm:px-3 text-xs font-semibold text-[#182019] shadow-2xs hover:border-[#183c2a]/40 hover:bg-stone-50 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+                title={currentUser.role !== 'customer' ? `Click to toggle ${roleNameMap[currentUser.role].short}` : 'Click to Switch Actor'}
               >
-                <div className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#183c2a]/10 text-[#183c2a]">
+                <div className="flex h-5.5 w-5.5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#183c2a]/10 text-[#183c2a]">
                   {getRoleIcon(currentUser.role)}
                 </div>
-                <span className="font-bold text-[#182019] max-w-[50px] sm:max-w-[100px] truncate hidden xs:inline">
+                <span className="font-bold text-[#182019] max-w-[80px] truncate hidden sm:inline">
                   {currentUser.name.split(' ')[0]}
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden 2xl:inline">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 hidden 2xl:inline">
                   {currentUser.role}
                 </span>
               </button>
 
+              {/* Standalone Logout on tablet/desktop (accessible via left drawer on mobile) */}
               {onLogout && (
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="flex items-center justify-center gap-1.5 h-8.5 w-8.5 sm:w-auto sm:h-10 rounded-full border border-rose-200/80 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 p-0 sm:px-3 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
+                  className="hidden sm:flex items-center justify-center gap-1.5 h-8.5 sm:h-10 rounded-full border border-rose-200/80 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 px-2.5 sm:px-3 text-xs font-bold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
                   title={`Sign out (${currentUser.name})`}
                 >
                   <LogOut className="h-3.5 w-3.5 text-rose-600" />
@@ -381,16 +368,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </>
           )}
 
+          {/* Cart / Basket Button */}
           <button
             type="button"
             onClick={onOpenCart}
             aria-label="View Shopping Cart"
-            className="flex items-center gap-1.5 sm:gap-2 h-8.5 sm:h-10 rounded-full bg-[#183c2a] px-2.5 sm:px-3.5 text-xs font-bold text-white shadow-sm hover:bg-[#214d36] active:scale-95 transition-all shrink-0 whitespace-nowrap cursor-pointer"
+            className="flex items-center gap-1 sm:gap-2 h-8.5 sm:h-10 rounded-full bg-[#183c2a] px-2.5 sm:px-3.5 text-xs font-bold text-white shadow-sm hover:bg-[#214d36] active:scale-95 transition-all shrink-0 whitespace-nowrap cursor-pointer"
           >
-            <ShoppingBag className="h-4 w-4 text-[#c5a880]" />
+            <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#c5a880]" />
             <span className="hidden sm:inline">Basket</span>
             {cartCount > 0 && (
-              <span className="flex h-4.5 min-w-[18px] sm:h-5 sm:min-w-[20px] items-center justify-center rounded-full bg-[#c5a880] px-1 text-[10px] font-black text-[#07100b]">
+              <span className="flex h-4 min-w-[16px] sm:h-5 sm:min-w-[20px] items-center justify-center rounded-full bg-[#c5a880] px-1 text-[9px] sm:text-[10px] font-black text-[#07100b]">
                 {cartCount}
               </span>
             )}
