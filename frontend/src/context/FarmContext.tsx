@@ -137,30 +137,7 @@ const INITIAL_DELIVERY_PROFILE: DeliveryPartnerProfile = {
 
 const INITIAL_SETTLEMENTS: Settlement[] = [];
 
-const INITIAL_SUBSCRIPTIONS: UserSubscription[] = [
-  {
-    id: 'sub-001',
-    boxId: 'box-2',
-    boxName: 'Family Seasonal Harvest Box',
-    frequency: 'weekly',
-    status: 'active',
-    deliveryDay: 'Every Tuesday morning (08:00 AM)',
-    pricePerCycle: 499,
-    nextDeliveryDate: 'Tuesday, 23 Sep 2026',
-    subscribedSince: '12 Aug 2026',
-  },
-  {
-    id: 'sub-002',
-    boxId: 'box-1',
-    boxName: 'Starter Green Box',
-    frequency: 'biweekly',
-    status: 'paused',
-    deliveryDay: 'Alternate Thursdays',
-    pricePerCycle: 299,
-    nextDeliveryDate: 'Paused by user',
-    subscribedSince: '02 Sep 2026',
-  },
-];
+const INITIAL_SUBSCRIPTIONS: UserSubscription[] = [];
 
 const INITIAL_ORDERS: Order[] = [];
 
@@ -285,7 +262,15 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return INITIAL_ORDERS;
   });
 
-  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>(INITIAL_SUBSCRIPTIONS);
+  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>(() => {
+    try {
+      const saved = localStorage.getItem('farm2street_user_subscriptions');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Could not read subscriptions from storage', e);
+    }
+    return INITIAL_SUBSCRIPTIONS;
+  });
 
   const [batches, setBatches] = useState<Record<string, TraceabilityBatch>>(() => {
     try {
@@ -339,6 +324,12 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('farm2street_farmer_profile', JSON.stringify(farmerProfile));
     } catch {}
   }, [farmerProfile]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('farm2street_user_subscriptions', JSON.stringify(subscriptions));
+    } catch {}
+  }, [subscriptions]);
 
   // Dynamic Live Produce Synchronization from Supabase Database
   useEffect(() => {

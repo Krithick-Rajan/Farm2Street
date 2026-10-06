@@ -153,7 +153,6 @@
         <version>3.2.5</version>
         <configuration>
           <excludes>
-            <exclude>**/*SeleniumTest.java</exclude>
             <exclude>**/*LiveAutomationRunner.java</exclude>
           </excludes>
         </configuration>

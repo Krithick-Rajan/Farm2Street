@@ -125,43 +125,80 @@ public class Farm2StreetLiveAutomationRunner {
             // STEP 3: Multi-Actor Authentication (Customer Login)
             // --------------------------------------------------------------------------
             runStep("03: Multi-Actor Login Portal (Customer Authentication)", () -> {
-                // Click Sign In button in navbar
-                List<WebElement> signInBtns = driver.findElements(By.xpath("//button[contains(., 'Sign In') or contains(@title, 'Sign In')]"));
-                if (signInBtns.isEmpty()) {
-                    // Check if already authenticated or look by icon
-                    signInBtns = driver.findElements(By.cssSelector("button[title*='Switch Actor'], button[title*='Sign In']"));
+                // Find visible Sign In / Switch button in navbar or drawer
+                WebElement signInBtn = null;
+                List<WebElement> candidates = driver.findElements(By.xpath("//header//button[contains(., 'Sign In') or contains(@title, 'Sign In') or contains(@title, 'Switch Actor') or contains(@title, 'toggle') or contains(@title, 'Portal')]"));
+                for (WebElement c : candidates) {
+                    if (c.isDisplayed()) {
+                        signInBtn = c;
+                        break;
+                    }
+                }
+                if (signInBtn == null) {
+                    // Try general buttons in header
+                    for (WebElement b : driver.findElements(By.cssSelector("header button"))) {
+                        if (b.isDisplayed()) {
+                            String txt = b.getText();
+                            String t = b.getAttribute("title");
+                            if ((txt != null && txt.toLowerCase().contains("sign in")) ||
+                                (t != null && (t.toLowerCase().contains("switch") || t.toLowerCase().contains("sign in") || t.toLowerCase().contains("actor")))) {
+                                signInBtn = b;
+                                break;
+                            }
+                        }
+                    }
                 }
 
-                if (!signInBtns.isEmpty()) {
-                    WebElement signInBtn = signInBtns.get(0);
-                    js.executeScript("arguments[0].scrollIntoView({block: 'center'});", signInBtn);
-                    signInBtn.click();
+                if (signInBtn != null) {
+                    js.executeScript("arguments[0].click();", signInBtn);
                     sleep(1500);
 
-                    // Switch to Customer tab if not already selected
+                    // Switch to Customer tab if present
                     List<WebElement> customerTabs = driver.findElements(By.xpath("//button[contains(., 'Customer')]"));
-                    if (!customerTabs.isEmpty()) {
-                        customerTabs.get(0).click();
-                        sleep(500);
+                    for (WebElement tab : customerTabs) {
+                        if (tab.isDisplayed()) {
+                            js.executeScript("arguments[0].click();", tab);
+                            sleep(500);
+                            break;
+                        }
                     }
 
                     // Fill in credentials for Customer (Reshmi / reshmi@123)
-                    List<WebElement> phoneInputs = driver.findElements(By.cssSelector("input[placeholder*='Email or mobile'], input[type='text']"));
+                    List<WebElement> phoneInputs = driver.findElements(By.cssSelector("input[placeholder*='Email or mobile'], input[type='text'], input[type='email']"));
                     List<WebElement> passInputs = driver.findElements(By.cssSelector("input[placeholder*='Password or OTP'], input[type='password']"));
 
-                    if (!phoneInputs.isEmpty() && !passInputs.isEmpty()) {
-                        WebElement phoneInput = phoneInputs.get(0);
-                        phoneInput.clear();
-                        phoneInput.sendKeys("reshmi@f2s.com");
+                    WebElement visiblePhone = null;
+                    for (WebElement p : phoneInputs) {
+                        if (p.isDisplayed()) {
+                            visiblePhone = p;
+                            break;
+                        }
+                    }
 
-                        WebElement passInput = passInputs.get(0);
-                        passInput.clear();
-                        passInput.sendKeys("reshmi@123");
+                    WebElement visiblePass = null;
+                    for (WebElement p : passInputs) {
+                        if (p.isDisplayed()) {
+                            visiblePass = p;
+                            break;
+                        }
+                    }
+
+                    if (visiblePhone != null && visiblePass != null) {
+                        visiblePhone.clear();
+                        visiblePhone.sendKeys("reshmi@f2s.com");
+
+                        visiblePass.clear();
+                        visiblePass.sendKeys("reshmi@123");
                         sleep(800);
 
                         // Click submit button
-                        WebElement submitBtn = driver.findElement(By.xpath("//button[@type='submit' or contains(., 'Sign In as')]"));
-                        submitBtn.click();
+                        List<WebElement> submitBtns = driver.findElements(By.xpath("//button[@type='submit' or contains(., 'Sign In as')]"));
+                        for (WebElement sb : submitBtns) {
+                            if (sb.isDisplayed()) {
+                                js.executeScript("arguments[0].click();", sb);
+                                break;
+                            }
+                        }
                         sleep(2000);
                         return "Authenticated as Customer ('Reshmi'). Profile verified in header.";
                     }
@@ -245,21 +282,35 @@ public class Farm2StreetLiveAutomationRunner {
             runStep("07: Live Order Tracker & Fulfillment Journey", () -> {
                 // Try to find Track button in navbar or drawer
                 List<WebElement> trackBtns = driver.findElements(By.cssSelector("button[title='Track Orders']"));
-                if (trackBtns.isEmpty() || !trackBtns.get(0).isDisplayed()) {
+                WebElement visibleTrack = null;
+                for (WebElement tb : trackBtns) {
+                    if (tb.isDisplayed()) {
+                        visibleTrack = tb;
+                        break;
+                    }
+                }
+
+                if (visibleTrack != null) {
+                    js.executeScript("arguments[0].click();", visibleTrack);
+                    sleep(1800);
+                } else {
                     // Open left drawer to click tracker
                     List<WebElement> menuBtns = driver.findElements(By.cssSelector("button[aria-label='Open Navigation Menu']"));
-                    if (!menuBtns.isEmpty()) {
-                        menuBtns.get(0).click();
-                        sleep(1000);
-                        List<WebElement> drawerTrack = driver.findElements(By.xpath("//button[contains(., 'Live Order Tracker')]"));
-                        if (!drawerTrack.isEmpty()) {
-                            drawerTrack.get(0).click();
-                            sleep(1800);
+                    for (WebElement mb : menuBtns) {
+                        if (mb.isDisplayed()) {
+                            js.executeScript("arguments[0].click();", mb);
+                            sleep(1000);
+                            List<WebElement> drawerTrack = driver.findElements(By.xpath("//button[contains(., 'Live Order Tracker')]"));
+                            for (WebElement dt : drawerTrack) {
+                                if (dt.isDisplayed()) {
+                                    js.executeScript("arguments[0].click();", dt);
+                                    sleep(1800);
+                                    break;
+                                }
+                            }
+                            break;
                         }
                     }
-                } else {
-                    trackBtns.get(0).click();
-                    sleep(1800);
                 }
 
                 // Close any open tracker or modal
