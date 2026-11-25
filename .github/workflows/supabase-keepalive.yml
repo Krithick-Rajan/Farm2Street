@@ -1,0 +1,35 @@
+name: Supabase Database Keepalive
+
+on:
+  schedule:
+    # Runs every 12 hours (00:00 and 12:00 UTC) so Supabase Free Tier never pauses after 7 days of inactivity
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Supabase PostgreSQL via PostgREST
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://aydjkpolejhsmpsrmgfo.supabase.co' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5ZGprcG9sZWpoc21wc3JtZ2ZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5NTM2MDksImV4cCI6MjEwNjUyOTYwOX0.eKqqXMKn1jhSli1y_XYNvaU5tK_qcV2ada-iOPPeuYg' }}
+        run: |
+          echo "Pinging Supabase project at $SUPABASE_URL ..."
+          HTTP_CODE=$(curl -sS -o /tmp/supabase_resp.json -w "%{http_code}" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/produce?select=id&limit=1")
+
+          echo "HTTP Status: $HTTP_CODE"
+          cat /tmp/supabase_resp.json
+          echo ""
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "ERROR: Supabase keepalive failed (HTTP $HTTP_CODE). Check if the project is paused on supabase.com."
+            exit 1
+          fi
+
+          echo "Supabase keepalive succeeded!"
